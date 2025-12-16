@@ -52,7 +52,10 @@
             padding: 25px; width: 100%; min-height: 100%;
             position: absolute; top: 0; left: 0;
             background: transparent; z-index: 10;
-            padding-top: 60px; opacity: 0; transition: opacity 0.5s ease;
+            padding-top: 60px; 
+            /* 修改：增加底部內距，防止內容貼底 */
+            padding-bottom: 80px;
+            opacity: 0; transition: opacity 0.5s ease;
         }
         .page.active { display: flex; z-index: 20; opacity: 1; }
 
@@ -186,13 +189,26 @@
         .mission-card h3 { margin-top: 0; color: var(--accent-red); font-family: var(--font-cn); border-bottom: 2px solid var(--ink); padding-bottom: 5px; }
         .secret-highlight { color: var(--accent-red); font-weight: bold; }
 
-        /* --- 翻轉卡片樣式 --- */
-        .flip-container { perspective: 1000px; width: 100%; height: 180px; cursor: pointer; margin-top: 15px; }
+        /* --- 翻轉卡片樣式 (修改: 優化手機觸控與滾動) --- */
+        .flip-container { perspective: 1000px; width: 100%; height: 220px; cursor: pointer; margin-top: 15px; } /* 修改：增加高度方便操作 */
         .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
         .flip-container.flipped .flipper { transform: rotateY(180deg); }
         .flip-card-front, .flip-card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px dashed #555; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
         .flip-card-front { z-index: 2; transform: rotateY(0deg); background: #eee; color: #555; font-weight: bold; text-align: center; }
-        .flip-card-back { transform: rotateY(180deg); background: #fff; border-color: var(--accent-red); overflow-y: auto; font-size: 0.95rem; line-height: 1.5; text-align: left; align-items: flex-start; }
+        
+        .flip-card-back { 
+            transform: rotateY(180deg) translateZ(1px); /* 修改：增加 translateZ 解決 iOS 渲染層級問題 */
+            background: #fff; border-color: var(--accent-red); 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; /* 修改：增加 iOS 平滑滾動 */
+            font-size: 0.95rem; line-height: 1.5; text-align: left; align-items: flex-start; 
+        }
+
+        /* 修改：當卡片翻轉後，強制提升背面層級以接收觸控事件 */
+        .flip-container.flipped .flip-card-back {
+            z-index: 10;
+            pointer-events: auto;
+        }
         
         /* 滾動條樣式優化 */
         .flip-card-back::-webkit-scrollbar { width: 12px; }
@@ -211,6 +227,11 @@
         .btn { background: var(--ink); color: var(--paper); border: 2px solid var(--ink); padding: 12px; font-family: var(--font-cn); font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin: 15px 0; letter-spacing: 1px; box-shadow: 3px 3px 0 rgba(138, 3, 3, 0.4); position: relative; }
         .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(138, 3, 3, 0.4); }
         .btn:disabled { background: #999; border-color: #999; color: #ccc; opacity: 0.8; box-shadow: none; cursor: not-allowed; }
+
+        /* 修改：增加此樣式以解決手機底部按鈕難按的問題 */
+        .btn-safe-bottom {
+            margin-bottom: 60px !important;
+        }
         
         .stamp-style { border: 4px solid currentColor; padding: 10px 20px; font-family: var(--font-cn); font-size: 1.8rem; font-weight: 900; display: inline-block; transform: rotate(-5deg); margin: 15px 0; background: rgba(255,255,255,0.5); letter-spacing: 5px; }
         .stamp-animate { animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -264,7 +285,8 @@
                 <p style="font-family: var(--font-en); font-size: 1.2rem; color: var(--accent-red); letter-spacing: 2px;">AVALON PROTOCOL</p>
             </div>
             <div style="flex-grow: 1;"></div>
-            <button class="btn" style="z-index: 2;" onclick="showLocalPage('1')">開始調查 (START)</button>
+            <!-- 修改：加入 btn-safe-bottom -->
+            <button class="btn btn-safe-bottom" style="z-index: 2;" onclick="showLocalPage('1')">開始調查 (START)</button>
         </div>
 
         <!-- Page 1: Login -->
@@ -350,7 +372,8 @@
                     </ul>
                 </div>
             </div>
-            <button class="btn" onclick="enterLobby()">前往案件大廳 (PROCEED)</button>
+            <!-- 修改：加入 btn-safe-bottom -->
+            <button class="btn btn-safe-bottom" onclick="enterLobby()">前往案件大廳 (PROCEED)</button>
         </div>
 
         <!-- Page 2: Lobby -->
@@ -528,7 +551,8 @@
                 <hr style="border-top: 1px dashed #000;">
                 <div id="final-roles-reveal" style="text-align: left; font-size: 0.9rem;"></div>
             </div>
-            <button class="btn" onclick="goToGiftSection()">前往怪禮物抽獎</button>
+            <!-- 修改：加入 btn-safe-bottom -->
+            <button class="btn btn-safe-bottom" onclick="goToGiftSection()">前往怪禮物抽獎</button>
         </div>
 
         <!-- Page 7: Gift -->
