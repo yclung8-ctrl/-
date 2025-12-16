@@ -188,7 +188,7 @@
         .mission-card h3 { margin-top: 0; color: var(--accent-red); font-family: var(--font-cn); border-bottom: 2px solid var(--ink); padding-bottom: 5px; }
         .secret-highlight { color: var(--accent-red); font-weight: bold; }
 
-        /* --- 翻轉卡片樣式 --- */
+        /* --- 翻轉卡片樣式 (修改: 優化手機觸控與滾動) --- */
         .flip-container { perspective: 1000px; width: 100%; height: 220px; cursor: pointer; margin-top: 15px; } 
         .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
         .flip-container.flipped .flipper { transform: rotateY(180deg); }
@@ -870,14 +870,15 @@
         };
 
         window.enterMainGame = () => {
-            const isUnlocked = localStorage.getItem("file2_unlocked");
+            // 修改 key 名稱以確保邏輯刷新
+            const isUnlocked = localStorage.getItem("case2_lock_secure");
             if (!isUnlocked) {
                 let password = prompt("⚠ RESTRICTED AREA ⚠\n請輸入案件密碼：");
                 if (password !== "2324") {
                     alert("存取被拒 (ACCESS DENIED)");
                     return;
                 }
-                localStorage.setItem("file2_unlocked", "true");
+                localStorage.setItem("case2_lock_secure", "true");
             }
 
             window.showLocalPage('4');
@@ -1211,7 +1212,7 @@
             setTimeout(() => { 
                 const isInterference = Math.random() < 0.3; 
                 if (isInterference) { 
-                    const cards = ["情報洩漏<br><small>請與你的鄰座互換禮物</small>", "駭客入侵<br><small>全體重抽</small>", "干擾卡三：匿名舉報<br><small>指定一人先拆禮物</small>"]; 
+                    const cards = ["情報洩漏<br><small>請與你的鄰座互換禮物</small>", "駭客入侵<br><small>全體重抽</small>", "匿名舉報<br><small>指定一人先拆禮物</small>"]; 
                     const card = cards[Math.floor(Math.random() * cards.length)]; 
                     document.getElementById('interference-text').innerHTML = card; 
                     document.getElementById('interference-fullscreen').style.display = 'flex'; 
@@ -1227,6 +1228,7 @@
             let pass = prompt("系統重置需要管理員密碼：");
             if (pass === "1264") {
                 if(confirm("【警告】這將清空所有玩家資料並重新開始。確定嗎？")) { 
+                    localStorage.clear();
                     db.ref('game').set({ state: 0 }).then(() => location.reload()); 
                 } 
             } else {
