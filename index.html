@@ -53,7 +53,6 @@
             position: absolute; top: 0; left: 0;
             background: transparent; z-index: 10;
             padding-top: 60px; 
-            /* 修改：增加底部內距，防止內容貼底 */
             padding-bottom: 80px;
             opacity: 0; transition: opacity 0.5s ease;
         }
@@ -189,28 +188,26 @@
         .mission-card h3 { margin-top: 0; color: var(--accent-red); font-family: var(--font-cn); border-bottom: 2px solid var(--ink); padding-bottom: 5px; }
         .secret-highlight { color: var(--accent-red); font-weight: bold; }
 
-        /* --- 翻轉卡片樣式 (修改: 優化手機觸控與滾動) --- */
-        .flip-container { perspective: 1000px; width: 100%; height: 220px; cursor: pointer; margin-top: 15px; } /* 修改：增加高度方便操作 */
+        /* --- 翻轉卡片樣式 --- */
+        .flip-container { perspective: 1000px; width: 100%; height: 220px; cursor: pointer; margin-top: 15px; } 
         .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
         .flip-container.flipped .flipper { transform: rotateY(180deg); }
         .flip-card-front, .flip-card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px dashed #555; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
         .flip-card-front { z-index: 2; transform: rotateY(0deg); background: #eee; color: #555; font-weight: bold; text-align: center; }
         
         .flip-card-back { 
-            transform: rotateY(180deg) translateZ(1px); /* 修改：增加 translateZ 解決 iOS 渲染層級問題 */
+            transform: rotateY(180deg) translateZ(1px); 
             background: #fff; border-color: var(--accent-red); 
             overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; /* 修改：增加 iOS 平滑滾動 */
+            -webkit-overflow-scrolling: touch; 
             font-size: 0.95rem; line-height: 1.5; text-align: left; align-items: flex-start; 
         }
 
-        /* 修改：當卡片翻轉後，強制提升背面層級以接收觸控事件 */
         .flip-container.flipped .flip-card-back {
             z-index: 10;
             pointer-events: auto;
         }
         
-        /* 滾動條樣式優化 */
         .flip-card-back::-webkit-scrollbar { width: 12px; }
         .flip-card-back::-webkit-scrollbar-track { background: #e0e0e0; border-radius: 6px; }
         .flip-card-back::-webkit-scrollbar-thumb { background: var(--accent-red); border-radius: 6px; border: 2px solid #e0e0e0; }
@@ -228,7 +225,6 @@
         .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(138, 3, 3, 0.4); }
         .btn:disabled { background: #999; border-color: #999; color: #ccc; opacity: 0.8; box-shadow: none; cursor: not-allowed; }
 
-        /* 修改：增加此樣式以解決手機底部按鈕難按的問題 */
         .btn-safe-bottom {
             margin-bottom: 60px !important;
         }
@@ -237,7 +233,16 @@
         .stamp-animate { animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes stamp-pop { 0% { opacity: 0; transform: scale(3) rotate(15deg); } 100% { opacity: 1; transform: scale(1) rotate(-5deg); } }
 
-        .global-reset-btn { position: fixed; top: 10px; right: 10px; background: var(--seal-red); color: white; border: 2px solid white; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; z-index: 99999; }
+        /* 重置按鈕隱藏樣式 */
+        .global-reset-btn { 
+            position: fixed; top: 10px; right: 10px; 
+            background: rgba(0,0,0,0.3); color: #666; 
+            border: 1px solid #444; padding: 5px 10px; 
+            font-size: 0.6rem; cursor: pointer; z-index: 99999; 
+            transition: 0.3s;
+        }
+        .global-reset-btn:hover { background: var(--seal-red); color: white; border-color: white; }
+
         #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-blood); z-index: 9999; display: flex; justify-content:center; align-items:center; flex-direction: column; color: var(--paper); font-family: var(--font-en); }
         
         #assassin-grid .player-tile { background: #1a0000; border: 2px solid #500; color: #a00; font-family: var(--font-en); letter-spacing: 1px; }
@@ -285,7 +290,6 @@
                 <p style="font-family: var(--font-en); font-size: 1.2rem; color: var(--accent-red); letter-spacing: 2px;">AVALON PROTOCOL</p>
             </div>
             <div style="flex-grow: 1;"></div>
-            <!-- 修改：加入 btn-safe-bottom -->
             <button class="btn btn-safe-bottom" style="z-index: 2;" onclick="showLocalPage('1')">開始調查 (START)</button>
         </div>
 
@@ -372,7 +376,6 @@
                     </ul>
                 </div>
             </div>
-            <!-- 修改：加入 btn-safe-bottom -->
             <button class="btn btn-safe-bottom" onclick="enterLobby()">前往案件大廳 (PROCEED)</button>
         </div>
 
@@ -551,7 +554,6 @@
                 <hr style="border-top: 1px dashed #000;">
                 <div id="final-roles-reveal" style="text-align: left; font-size: 0.9rem;"></div>
             </div>
-            <!-- 修改：加入 btn-safe-bottom -->
             <button class="btn btn-safe-bottom" onclick="goToGiftSection()">前往怪禮物抽獎</button>
         </div>
 
@@ -871,7 +873,7 @@
             const isUnlocked = localStorage.getItem("file2_unlocked");
             if (!isUnlocked) {
                 let password = prompt("⚠ RESTRICTED AREA ⚠\n請輸入案件密碼：");
-                if (password !== "1264") {
+                if (password !== "2324") {
                     alert("存取被拒 (ACCESS DENIED)");
                     return;
                 }
@@ -1221,7 +1223,16 @@
             }, 1000); 
         };
 
-        window.hardReset = () => { if(confirm("【警告】這將清空所有玩家資料並重新開始。確定嗎？")) { db.ref('game').set({ state: 0 }).then(() => location.reload()); } };
+        window.hardReset = () => { 
+            let pass = prompt("系統重置需要管理員密碼：");
+            if (pass === "1264") {
+                if(confirm("【警告】這將清空所有玩家資料並重新開始。確定嗎？")) { 
+                    db.ref('game').set({ state: 0 }).then(() => location.reload()); 
+                } 
+            } else {
+                if (pass !== null) alert("密碼錯誤");
+            }
+        };
     </script>
 </body>
 </html>
