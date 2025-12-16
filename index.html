@@ -1210,7 +1210,7 @@
             if (!myGiftNum) return; 
             const resultDiv = document.getElementById('draw-result'); resultDiv.innerHTML = '<p>抽獎中...</p>'; 
             setTimeout(() => { 
-                const isInterference = Math.random() < 0.3; 
+                const isInterference = Math.random() < 0.2; 
                 if (isInterference) { 
                     const cards = ["情報洩漏<br><small>請與你的鄰座互換禮物</small>", "駭客入侵<br><small>全體重抽</small>", "匿名舉報<br><small>指定一人先拆禮物</small>"]; 
                     const card = cards[Math.floor(Math.random() * cards.length)]; 
