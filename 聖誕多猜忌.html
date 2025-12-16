@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>聖誕多猜忌 - CLASSIFIED</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Caveat:wght@700&family=Noto+Serif+TC:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 視覺系統 (保持不變) --- */
+        :root {
+            --bg-blood: #1a0505;
+            --paper: #f2e8d5;
+            --folder-color: #e3d4b6;
+            --ink: #2b1d1d;
+            --accent-red: #8a0303;
+            --seal-red: #b22222;
+            --success-green: #2e5902;
+            --fail-red: #8a0303;
+            --font-en: 'Special Elite', monospace;
+            --font-cn: 'Noto Serif TC', serif;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background-color: var(--bg-blood);
+            margin: 0; padding: 0; height: 100vh;
+            display: flex; justify-content: center;
+            font-family: var(--font-cn); color: var(--ink);
+            overflow: hidden;
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("https://www.transparenttextures.com/patterns/black-felt.png");
+        }
+
+        .container {
+            width: 100%; max-width: 450px; height: 100%;
+            background-color: var(--paper);
+            position: relative;
+            box-shadow: 0 0 60px rgba(0,0,0,0.9);
+            display: flex; flex-direction: column;
+            overflow-y: auto; overflow-x: hidden;
+            background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+        }
+        
+        .container::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0 0 80px rgba(62, 39, 35, 0.4);
+            pointer-events: none; z-index: 5;
+        }
+
+        .page {
+            display: none; flex-direction: column; align-items: center;
+            padding: 25px; width: 100%; min-height: 100%;
+            position: absolute; top: 0; left: 0;
+            background: transparent; z-index: 10;
+            padding-top: 60px; opacity: 0; transition: opacity 0.5s ease;
+        }
+        .page.active { display: flex; z-index: 20; opacity: 1; }
+
+        /* --- 裝飾元素 --- */
+        .magnifying-glass {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
+            width: 120px; height: 120px;
+            border: 8px solid #333; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0,0,0,0.3), inset 0 0 20px rgba(255,255,255,0.5);
+            z-index: 1;
+        }
+        .magnifying-glass::after {
+            content: ''; position: absolute; bottom: -60px; right: -40px;
+            width: 20px; height: 80px; background: #5d4037;
+            transform: rotate(-45deg); border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        .scattered-paper {
+            position: absolute; background: #fff; border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            font-family: var(--font-en); font-size: 0.5rem; color: #aaa;
+            padding: 5px; display: flex; align-items: center; justify-content: center;
+        }
+
+        h1, h2 { font-family: var(--font-en); color: var(--ink); text-align: center; margin: 10px 0; }
+        h1 { 
+            font-size: 2.8rem; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 100px;
+            text-shadow: 2px 2px 0px rgba(138, 3, 3, 0.2);
+            transform: rotate(-2deg);
+        }
+        h2 { font-size: 1.5rem; background: var(--ink); color: var(--paper); padding: 5px 15px; transform: skew(-5deg); margin-bottom: 20px; box-shadow: 3px 3px 0 rgba(0,0,0,0.2); }
+
+        /* --- 檔案翻閱 --- */
+        .file-viewer-wrapper {
+            width: 100%; position: relative; min-height: 600px; height: auto; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding-top: 20px; padding-bottom: 100px; 
+        }
+
+        .dossier-folder {
+            width: 90%; max-width: 360px; min-height: 500px; height: auto; 
+            background: var(--folder-color); border: 1px solid #c0b090; border-radius: 2px 10px 2px 2px;
+            position: relative; box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; align-items: center; padding: 30px 15px; 
+            transition: transform 0.3s ease; margin-bottom: 20px;
+        }
+        .dossier-folder::before {
+            content: 'CONFIDENTIAL'; position: absolute; top: -25px; left: 0;
+            width: 120px; height: 25px; background: var(--folder-color); border: 1px solid #c0b090;
+            border-bottom: none; border-radius: 5px 10px 0 0; font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center; color: #888; font-family: var(--font-en);
+        }
+
+        .dossier-name { font-family: var(--font-en); font-size: 2.2rem; font-weight: bold; color: var(--ink); border-bottom: 2px solid var(--accent-red); margin: 20px 0 35px 0; text-transform: uppercase; }
+        .dossier-status { font-family: var(--font-en); font-size: 1.2rem; border: 3px solid #555; padding: 5px 15px; transform: rotate(-5deg); opacity: 0.4; margin-bottom: 15px; font-weight: bold; }
+        .dossier-status.taken { border-color: var(--accent-red); color: var(--accent-red); opacity: 1; }
+
+        .avatar-section { display: none; width: 100%; margin-top: 5px; animation: slideDown 0.5s ease; box-sizing: border-box; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; background: #fff; padding: 8px; border: 2px dashed #aaa; box-shadow: inset 0 0 5px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; margin-bottom: 10px; min-height: 180px; }
+        .avatar-option { width: 100%; height: auto; aspect-ratio: 1 / 1; cursor: pointer; border: 2px solid transparent; padding: 2px; transition: 0.2s; opacity: 0.8; background: #fff; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .avatar-option:hover { opacity: 1; transform: scale(1.05); }
+        .avatar-option.selected { border-color: var(--accent-red); opacity: 1; box-shadow: 0 0 5px rgba(138, 3, 3, 0.5); transform: scale(1.1) rotate(-2deg); z-index: 5; background: white; }
+        .avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
+        .nav-btn { position: absolute; top: 25px; background: rgba(43, 29, 29, 0.8); color: #fff; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; z-index: 50; display: flex; justify-content:center; align-items:center; transition: 0.2s; box-shadow: 0 4px 5px rgba(0,0,0,0.3); }
+        .nav-btn:hover { background: var(--accent-red); transform: scale(1.1); } .nav-prev { left: 0; } .nav-next { right: 0; }
+
+        /* --- 指紋 --- */
+        .fingerprint-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; width: 100%; cursor: pointer; margin-top: 20px; }
+        .fingerprint { width: 140px; height: 180px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .fingerprint svg { fill: none; stroke: var(--accent-red); stroke-width: 2.5; stroke-linecap: round; width: 100%; height: 100%; filter: drop-shadow(0 0 2px rgba(138,3,3,0.5)); }
+        .scan-line { position: absolute; width: 110%; height: 3px; background: var(--accent-red); box-shadow: 0 0 15px var(--accent-red); top: 0; animation: scan 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1); left: -5%; }
+        @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+        /* --- 特工檔案 --- */
+        .agent-dossier { width: 100%; background: #fdfbf7; border: 1px solid #999; padding: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.2); font-family: var(--font-en); position: relative; margin-bottom: 20px; }
+        .dossier-header { background: #111; color: #fff; padding: 10px; font-size: 1.5rem; letter-spacing: 2px; text-transform: uppercase; margin: -15px -15px 15px -15px; border-bottom: 2px solid #555; }
+        .dossier-body { display: flex; gap: 10px; position: relative; }
+        .dossier-info { flex: 1; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }
+        .dossier-label { font-weight: bold; opacity: 0.6; font-size: 0.7rem; margin-bottom: -2px; }
+        .dossier-value { border-bottom: 1px solid #aaa; padding-bottom: 2px; font-weight: bold; min-height: 20px; font-family: var(--font-cn); }
+        .dossier-photo-frame { width: 110px; height: 130px; border: 4px solid #fff; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); background: #eee; position: relative; transform: rotate(2deg); }
+        .dossier-photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .rules-text { font-family: var(--font-cn); font-size: 0.9rem; line-height: 1.6; text-align: left; margin-top: 15px; color: #333; border-top: 1px dashed #aaa; padding-top: 10px; }
+        .rules-text h4 { margin: 15px 0 5px 0; color: var(--accent-red); font-family: var(--font-hand); font-size: 1.6rem; font-weight: bold; }
+        .rules-text ul { padding-left: 20px; margin: 5px 0; }
+        .rules-text li { margin-bottom: 5px; }
+
+        /* --- 案件大廳 --- */
+        .btn-case { height: 90px; display:flex; flex-direction:column; justify-content:center; align-items:center; background: var(--ink); color: var(--paper); border: 2px solid var(--ink); width: 100%; margin: 10px 0; box-shadow: 4px 4px 0 rgba(0,0,0,0.2); cursor: pointer; position: relative; overflow: hidden; }
+        .btn-case:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+        .progress-container { width: 100%; height: 6px; background: #555; position: absolute; bottom: 0; left: 0; }
+        .progress-bar { height: 100%; background: var(--accent-red); width: 0%; transition: width 0.5s; }
+        .blur-text { filter: blur(6px); user-select: none; transition: 0.3s; }
+        .reveal-text { filter: blur(0); }
+
+        /* --- 任務現場 --- */
+        .mission-header-badge { background: #2b1d1d; color: #fff; padding: 10px 30px; font-size: 1.8rem; font-weight: bold; display: inline-block; transform: skew(-10deg); margin-bottom: 20px; box-shadow: 4px 4px 0 rgba(0,0,0,0.3); font-family: var(--font-cn); border-left: 5px solid var(--accent-red); }
+
+        .scoreboard { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .score-circle { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #555; background: #ddd; display: flex; justify-content: center; align-items: center; font-family: var(--font-en); font-weight: bold; font-size: 1.6rem; color: #333; position: relative; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+        .score-circle.success { background: var(--success-green); color: white; border-color: #1a3301; }
+        .score-circle.fail { background: var(--fail-red); color: white; border-color: #330101; }
+        .score-circle.current { background: #fff; color: var(--accent-red); animation: breathing-glow 2s infinite ease-in-out; transform: scale(1.1); z-index: 10; }
+        @keyframes breathing-glow { 0% { box-shadow: 0 0 5px rgba(138, 3, 3, 0.2); border-color: #555; } 50% { box-shadow: 0 0 25px rgba(138, 3, 3, 0.8), inset 0 0 10px rgba(138, 3, 3, 0.1); border-color: var(--accent-red); } 100% { box-shadow: 0 0 5px rgba(138, 3, 3, 0.2); border-color: #555; } }
+        .score-circle::after { content: attr(data-players); position: absolute; bottom: -25px; font-size: 0.8rem; color: #333; font-weight: bold; font-family: var(--font-cn); }
+
+        .player-select-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 100%; margin-top: 15px; }
+        .player-tile { background: #fff; border: 2px solid #000; padding: 15px; text-align: center; cursor: pointer; position: relative; font-family: var(--font-en); font-weight: bold; font-size: 1.2rem; transition: 0.1s; box-shadow: 3px 3px 0 rgba(0,0,0,0.1); color: #000; }
+        .player-tile:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
+        .player-tile.selected { background: var(--ink); color: #fff; border-color: #000; box-shadow: none; transform: translate(2px, 2px); }
+        
+        #confirm-team-btn { width: 100%; background: #999; color: #fff; border: none; padding: 15px; font-size: 1.2rem; margin-top: 25px; cursor: pointer; font-family: var(--font-cn); font-weight: bold; box-shadow: none; }
+        #confirm-team-btn:disabled { background: #ccc; cursor: not-allowed; }
+        #confirm-team-btn:not(:disabled) { background: #555; }
+
+        .vote-btn { width: 48%; padding: 15px; font-size: 1.2rem; border: 2px solid #000; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .vote-btn:active { transform: scale(0.95); opacity: 0.8; }
+        .vote-btn.selected { border-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); transform: scale(1.05); }
+        .vote-success { background: var(--success-green); color: white; border-color: #1a3301; }
+        .vote-fail { background: var(--fail-red); color: white; border-color: #330101; }
+
+        /* --- 任務卡與規則卡 --- */
+        .mission-card { background: #fff; border: 2px dashed #333; padding: 15px; margin-bottom: 20px; position: relative; text-align: left; }
+        .mission-card h3 { margin-top: 0; color: var(--accent-red); font-family: var(--font-cn); border-bottom: 2px solid var(--ink); padding-bottom: 5px; }
+        .secret-highlight { color: var(--accent-red); font-weight: bold; }
+
+        /* --- 翻轉卡片樣式 --- */
+        .flip-container { perspective: 1000px; width: 100%; height: 180px; cursor: pointer; margin-top: 15px; }
+        .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
+        .flip-container.flipped .flipper { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px dashed #555; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
+        .flip-card-front { z-index: 2; transform: rotateY(0deg); background: #eee; color: #555; font-weight: bold; text-align: center; }
+        .flip-card-back { transform: rotateY(180deg); background: #fff; border-color: var(--accent-red); overflow-y: auto; font-size: 0.95rem; line-height: 1.5; text-align: left; align-items: flex-start; }
+        
+        /* 滾動條樣式優化 */
+        .flip-card-back::-webkit-scrollbar { width: 12px; }
+        .flip-card-back::-webkit-scrollbar-track { background: #e0e0e0; border-radius: 6px; }
+        .flip-card-back::-webkit-scrollbar-thumb { background: var(--accent-red); border-radius: 6px; border: 2px solid #e0e0e0; }
+
+        /* --- 計時器 --- */
+        #timer-display { font-family: var(--font-en); font-size: 4rem; text-align: center; margin: 20px 0; color: var(--ink); text-shadow: 2px 2px 0 rgba(0,0,0,0.2); font-weight: bold; }
+
+        .interference-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--accent-red); color: white; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; animation: flash 0.5s infinite; display: none; cursor: pointer; }
+        @keyframes flash { 0% { background: var(--accent-red); } 50% { background: #000; } 100% { background: var(--accent-red); } }
+        
+        .number-btn { width: 50px; height: 50px; border: 2px solid var(--ink); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; cursor: pointer; background: #fff; transition: 0.2s; }
+        .number-btn.selected { background: var(--accent-red); color: white; border-radius: 50%; border-color: var(--accent-red); transform: scale(1.2); }
+
+        .btn { background: var(--ink); color: var(--paper); border: 2px solid var(--ink); padding: 12px; font-family: var(--font-cn); font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin: 15px 0; letter-spacing: 1px; box-shadow: 3px 3px 0 rgba(138, 3, 3, 0.4); position: relative; }
+        .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(138, 3, 3, 0.4); }
+        .btn:disabled { background: #999; border-color: #999; color: #ccc; opacity: 0.8; box-shadow: none; cursor: not-allowed; }
+        
+        .stamp-style { border: 4px solid currentColor; padding: 10px 20px; font-family: var(--font-cn); font-size: 1.8rem; font-weight: 900; display: inline-block; transform: rotate(-5deg); margin: 15px 0; background: rgba(255,255,255,0.5); letter-spacing: 5px; }
+        .stamp-animate { animation: stamp-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes stamp-pop { 0% { opacity: 0; transform: scale(3) rotate(15deg); } 100% { opacity: 1; transform: scale(1) rotate(-5deg); } }
+
+        .global-reset-btn { position: fixed; top: 10px; right: 10px; background: var(--seal-red); color: white; border: 2px solid white; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; z-index: 99999; }
+        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-blood); z-index: 9999; display: flex; justify-content:center; align-items:center; flex-direction: column; color: var(--paper); font-family: var(--font-en); }
+        
+        #assassin-grid .player-tile { background: #1a0000; border: 2px solid #500; color: #a00; font-family: var(--font-en); letter-spacing: 1px; }
+        #assassin-grid .player-tile.selected { background: #500; color: white; border-color: red; box-shadow: 0 0 15px red; transform: scale(1.05); }
+
+        /* 懲罰與獎勵文字樣式 */
+        .punishment-box { border: 2px solid var(--ink); padding: 15px; margin-top: 15px; background-color: rgba(255,255,255,0.5); }
+        .special-reward { font-family: var(--font-cn); color: #fff; background: var(--seal-red); padding: 5px 10px; border-radius: 5px; display: inline-block; margin-top: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); animation: breathing-glow 2s infinite; }
+    </style>
+</head>
+<body>
+
+    <!-- 音效素材 -->
+    <audio id="sfx-click">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.m4a" type="audio/mp4">
+    </audio>
+    <audio id="sfx-alert">
+        <!-- 緊張警報聲 -->
+        <source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.m4a" type="audio/mp4">
+    </audio>
+
+    <button class="global-reset-btn" onclick="hardReset()">⚠ RESET</button>
+
+    <div id="loading">
+        <h2>DECRYPTING...</h2>
+    </div>
+
+    <!-- 全屏干擾卡 -->
+    <div id="interference-fullscreen" class="interference-overlay" onclick="this.style.display='none'">
+        <h1 style="font-size: 4rem; border: none; color: white;">⚠ WARNING</h1>
+        <h2 id="interference-text" style="background: none; box-shadow: none; font-size: 2rem;"></h2>
+        <p style="margin-top:20px; font-size:1rem; opacity:0.8;">( TAP SCREEN TO DISMISS )</p>
+    </div>
+
+    <div class="container">
+        <!-- Page 0: Cover -->
+        <div id="page-0" class="page active">
+            <div class="magnifying-glass"></div>
+            <div class="scattered-paper" style="top: 10%; left: 5%; transform: rotate(-10deg);">CONFIDENTIAL</div>
+            <div class="scattered-paper" style="top: 15%; right: 5%; transform: rotate(5deg);">EVIDENCE #01</div>
+            <div class="scattered-paper" style="bottom: 20%; left: 10%; transform: rotate(15deg);">SUSPECT LIST</div>
+
+            <div style="margin-top: 80px; text-align: center; position: relative; z-index: 2;">
+                <h1 style="margin-top:20px; color: #111; text-shadow: 2px 2px 0px rgba(138, 3, 3, 0.2);">聖誕多猜忌</h1>
+                <p style="font-family: var(--font-en); font-size: 1.2rem; color: var(--accent-red); letter-spacing: 2px;">AVALON PROTOCOL</p>
+            </div>
+            <div style="flex-grow: 1;"></div>
+            <button class="btn" style="z-index: 2;" onclick="showLocalPage('1')">開始調查 (START)</button>
+        </div>
+
+        <!-- Page 1: Login -->
+        <div id="page-1" class="page">
+            <h2>探員報到</h2>
+            <div class="file-viewer-wrapper">
+                <div class="dossier-folder">
+                    <button class="nav-btn nav-prev" onclick="changeFile(-1)" style="top: 20px; left: -20px;">&#8249;</button>
+                    <button class="nav-btn nav-next" onclick="changeFile(1)" style="top: 20px; right: -20px;">&#8250;</button>
+                    <div style="font-size: 2rem; opacity: 0.2; position: absolute; top: 10px; right: 20px;">#<span id="file-number">01</span></div>
+                    <div style="text-align: center; width: 100%;">
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 10px;">CODE NAME</div>
+                        <div id="file-name" class="dossier-name">SKAI</div>
+                        <div id="file-status" class="dossier-status">AVAILABLE</div>
+                    </div>
+                    <button id="select-name-btn" class="btn" style="background: white; color: var(--ink); border: 1px dashed var(--ink);" onclick="openFileAvatarSection()">開啟檔案 (SELECT)</button>
+                    <div id="avatar-section" class="avatar-section">
+                        <div style="font-size: 0.8rem; color: #666; margin: 10px 0; text-align: center;">ATTACH PHOTO ID:</div>
+                        <div id="avatar-selection-grid" class="avatar-grid"></div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn" style="background: #ccc; border:none; font-size: 0.8rem; padding: 5px; flex:1;" onclick="closeFileAvatarSection()">取消</button>
+                            <button id="confirm-btn" class="btn" style="margin:0; flex:2; background: var(--accent-red); border-color: var(--accent-red);" onclick="confirmIdentity()" disabled>確認 (CONFIRM)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 1.5: Fingerprint Unlock -->
+        <div id="page-fingerprint" class="page">
+            <h2>身份驗證</h2>
+            <div class="fingerprint-container" onclick="unlockDossier()">
+                <div class="fingerprint">
+                    <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 10 C 20 10 10 35 10 60 C 10 85 20 110 50 110 C 80 110 90 85 90 60 C 90 35 80 10 50 10 M 50 20 C 30 20 20 40 20 60 M 50 20 C 70 20 80 40 80 60 M 30 60 C 30 80 40 90 50 90 C 60 90 70 80 70 60 M 40 60 C 40 70 45 75 50 75 C 55 75 60 70 60 60" fill="none" stroke="var(--accent-red)" stroke-width="2" />
+                    </svg>
+                    <div class="scan-line"></div>
+                </div>
+                <p style="margin-top: 20px; color: var(--accent-red); font-family: var(--font-en); animation: pulse 1s infinite;">TOUCH TO DECRYPT</p>
+            </div>
+        </div>
+
+        <!-- Page 1.6: Dossier Reveal -->
+        <div id="page-dossier" class="page">
+            <div class="agent-dossier">
+                <div class="dossier-header">SECRET AGENT</div>
+                <div class="dossier-body">
+                    <div class="dossier-info">
+                        <span class="dossier-label">CODE NAME:</span>
+                        <div class="dossier-value" id="dossier-codename"></div>
+                        
+                        <span class="dossier-label">ROLE:</span>
+                        <div class="dossier-value" id="dossier-role" style="color:var(--accent-red)"></div>
+                        
+                        <span class="dossier-label">OBJECTIVE:</span>
+                        <div class="dossier-value" id="dossier-objective" style="font-size:0.8rem; font-weight:normal;"></div>
+                    </div>
+                    <div class="dossier-photo-frame">
+                        <img id="dossier-photo" src="">
+                    </div>
+                </div>
+                
+                <p style="text-align:left; margin-top:10px; font-size:0.8rem; opacity:0.7;">IDENTITY VERIFIED:</p>
+                <div style="text-align:center;">
+                    <div id="dossier-role-stamp" class="stamp-style" style="border: 2px solid var(--ink); padding: 5px;"></div>
+                </div>
+
+                <div id="dossier-teammates" style="font-size: 0.8rem; color: var(--accent-red); margin-top: 10px; background: #eee; padding: 5px; font-weight: bold; border-left: 3px solid var(--accent-red);"></div>
+
+                <div class="rules-text">
+                    <h4>MISSION PROTOCOL</h4>
+                    <p style="font-weight:bold;">環節一：準備派對（詳見案件檔案一）</p>
+                    <ul>
+                        <li>任務一：準備裝飾物</li>
+                        <li>任務二：準備怪禮物</li>
+                    </ul>
+                    <p style="font-weight:bold; margin-top:10px;">環節二：派對行動 (關鍵)</p>
+                    <ul>
+                        <li>遊戲共 3 輪任務</li>
+                        <li>領袖擁有絕對話語權，可指定行動細節</li>
+                        <li><strong>臥底目標：</strong>導致 2 次任務失敗 -> 直接獲勝</li>
+                        <li><strong>偵探目標：</strong>取得 2 次任務成功</li>
+                    </ul>
+                </div>
+            </div>
+            <button class="btn" onclick="enterLobby()">前往案件大廳 (PROCEED)</button>
+        </div>
+
+        <!-- Page 2: Lobby -->
+        <div id="page-2" class="page">
+            <button style="position: absolute; top: 15px; left: 15px; background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:bold;" onclick="showGlobalPage('dossier')">← 查看特工檔案</button>
+            
+            <h2>案件大廳</h2>
+            <div class="case-file" style="display:flex; align-items:center; gap: 15px;">
+                <img id="lobby-avatar-img" src="" style="width: 70px; height: 70px; border-radius: 10px; border: 2px solid var(--ink); object-fit: cover;">
+                <div style="text-align:left;">
+                    <span style="font-size:0.8rem; color:#888;">AGENT IDENTITY</span><br>
+                    <span id="lobby-player-name" style="font-weight:bold; font-size: 1.5rem; color:var(--accent-red)"></span>
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+                        <span id="lobby-player-role" class="blur-text" style="font-weight:bold; font-size: 1rem; color:#555;">[ Loading... ]</span>
+                        <button onclick="toggleRoleVisibility()" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">👁️</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-case" onclick="showLocalPage(3)">
+                <span style="font-size: 1.2rem; font-weight:bold;">📁 案件一：準備派對</span>
+                <span style="font-size: 0.8rem; opacity:0.8;">裝飾指令 / 抽取怪禮物</span>
+            </div>
+
+            <div class="btn-case" onclick="enterMainGame()">
+                <span style="font-size: 1.2rem; font-weight:bold;">📁 案件二：派對行動</span>
+                <span style="font-size: 0.8rem; opacity:0.8;">指認臥底 / 執行任務</span>
+                <div class="progress-container"><div class="progress-bar" id="lobby-progress"></div></div>
+            </div>
+        </div>
+
+        <!-- Page 3: Prep -->
+        <div id="page-3" class="page">
+            <button style="position: absolute; top: 15px; left: 15px; background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:bold;" onclick="showLocalPage(2)">← BACK</button>
+            <h2>案件一：準備派對</h2>
+            
+            <div class="case-file">
+                <p style="text-align:left; font-weight:bold; border-bottom:1px solid #ccc;">任務一：派對裝飾</p>
+                <p id="mission-deco-text" style="margin: 15px 0; font-size: 1.1rem;">讀取指令中...</p>
+                
+                <p style="text-align:left; font-weight:bold; border-bottom:1px solid #ccc; margin-top:20px;">任務二：怪禮物</p>
+                <div style="text-align:center; margin: 15px 0;">
+                    <div id="gift-rule-btn" onclick="revealRule()" style="border: 2px dashed #888; padding: 10px; cursor: pointer; color: #666;">點擊抽取規則</div>
+                    <div id="gift-rule-display" style="display:none;">
+                        <div id="gift-rule-text" class="stamp-style" style="border-style: dashed; font-size: 1.2rem; transform: rotate(1deg);"></div>
+                        <p id="gift-rule-desc" style="font-size: 0.9rem; margin-top: 5px; font-weight: bold; color: var(--accent-red);"></p>
+                        <p style="font-size: 0.8rem; color: #666;">(預算 $50)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Avalon Game -->
+        <div id="page-4" class="page">
+            <button style="position: absolute; top: 15px; left: 15px; background:transparent; border:none; color:var(--ink); cursor:pointer; font-weight:bold;" onclick="showLocalPage(2)">← BACK</button>
+            
+            <div class="mission-header-badge">
+                任務現場 <span style="color:var(--accent-red); margin-left:5px;" id="round-indicator">ROUND 1 / 3</span>
+            </div>
+
+            <div class="scoreboard">
+                <div id="game-score-1" class="score-circle" data-players="3人">1</div>
+                <div id="game-score-2" class="score-circle" data-players="3人">2</div>
+                <div id="game-score-3" class="score-circle" data-players="4人">3</div>
+            </div>
+            
+            <!-- Phase 1: Intro (場次介紹) -->
+            <div id="phase-round-intro" style="display:none; width: 100%; text-align: center;">
+                <h1 id="intro-title" style="font-size: 1.8rem; border-bottom: 2px solid var(--accent-red); margin-bottom: 20px;"></h1>
+                <p style="font-size: 1.2rem; margin: 20px 0;">當前領袖 : <strong id="intro-leader-name" style="color: var(--accent-red);"></strong></p>
+                <button class="btn" onclick="startRoundRules()" style="background: var(--accent-red); margin-top:30px;">開始任務 (START MISSION)</button>
+            </div>
+
+            <!-- Phase 2: Rules (本場次規則) -->
+            <div id="phase-rules" style="display:none; width: 100%; text-align: center;">
+                <div class="mission-card">
+                    <h3>本輪指令 (CLASSIFIED)</h3>
+                    <div id="rules-public-display" style="margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; white-space: pre-line;"></div>
+                    
+                    <!-- 翻轉卡片設計 -->
+                    <div class="flip-container" onclick="this.classList.toggle('flipped')">
+                        <div class="flipper">
+                            <div class="flip-card-front">
+                                <span style="font-size:2rem; margin-bottom:10px;">🔒</span>
+                                你的秘密任務<br><small>(點擊翻閱)</small>
+                            </div>
+                            <div class="flip-card-back" id="rules-secret-display">
+                                <!-- 秘密任務內容 -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div id="leader-start-discussion-btn" style="display:none;">
+                    <button class="btn" style="background: var(--ink); color: white;" onclick="startRoundDiscussion()">進入討論 (ENTER DISCUSSION)</button>
+                    <p style="font-size:0.8rem; color:#666;">(僅領袖可點擊)</p>
+                </div>
+                <div id="member-waiting-rules" style="text-align: center; color: #666; font-style: italic; margin-top: 20px;">
+                    等待領袖開啟討論...
+                </div>
+            </div>
+
+            <!-- Phase 3: Discussion (倒計時) -->
+            <div id="phase-discussion" style="display:none; width: 100%; text-align: center;">
+                <div style="background: rgba(0,0,0,0.05); padding: 20px; border: 2px solid var(--ink); margin-top: 20px;">
+                    <h3>討論環節</h3>
+                    <p style="font-size: 0.9rem;">請觀察對話中的關鍵詞與動作。</p>
+                    <div id="timer-display">03:00</div>
+                    
+                    <!-- 討論階段也顯示秘密任務 (翻轉卡片) -->
+                    <div class="flip-container" onclick="this.classList.toggle('flipped')" style="height:120px;">
+                        <div class="flipper">
+                            <div class="flip-card-front" style="background:#fff; border:1px solid #ccc;">
+                                <small>再次查看秘密任務</small>
+                            </div>
+                            <div class="flip-card-back" id="rules-secret-display-discussion"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" style="background: var(--ink); color: white; margin-top: 20px;" onclick="startAssignmentPhase()">快速進入指派 (SKIP)</button>
+            </div>
+
+            <!-- Phase 4: Assignment (領袖指派) -->
+            <div id="phase-assignment" style="display:none; width: 100%; text-align: center;">
+                <div id="leader-controls" style="display:none; width: 100%;">
+                    <p>請領袖根據討論結果指派特工：</p>
+                    <div id="team-select-grid" class="player-select-grid"></div>
+                    <button id="confirm-team-btn" onclick="confirmAssignment()" disabled>確認指派 (CONFIRM)</button>
+                </div>
+                <div id="member-waiting-assignment" style="text-align: center; color: #666; font-style: italic; margin-top: 20px;">
+                    等待領袖指派人選...
+                </div>
+            </div>
+
+            <!-- Phase 5: Mission Voting -->
+            <div id="phase-mission" style="display:none; width: 100%;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h3>行動執行中</h3>
+                    <p>指派成員：<br><span id="mission-team-names" style="font-weight:bold; font-size: 1.2rem;"></span></p>
+                </div>
+                <div id="voting-area" style="display:none; margin-top: 20px;">
+                    <p style="color: var(--accent-red); text-align: center;">請提交你的行動報告</p>
+                    <div style="display:flex; justify-content:space-between; gap: 10px;">
+                        <button id="vote-btn-success" class="vote-btn vote-success" onclick="submitMissionVote(true)">任務成功</button>
+                        <button id="vote-btn-fail" class="vote-btn vote-fail" onclick="submitMissionVote(false)">任務失敗</button>
+                    </div>
+                    <p id="good-guy-warning" style="font-size: 0.7rem; color: #666; display:none; margin-top:5px; text-align: center;">*偵探只能投成功</p>
+                </div>
+                <div id="voting-wait" style="text-align: center; color: #666; margin-top: 20px;">等待成員提交報告...</div>
+            </div>
+
+            <!-- Phase 6: Result -->
+            <div id="phase-result" style="display:none; width: 100%; text-align: center;">
+                <div style="border: 2px solid var(--ink); padding: 20px; background: #fff; margin-top: 20px;">
+                    <h3>任務結果</h3>
+                    <h1 id="round-result-text" style="border:none; margin: 10px 0;"></h1>
+                    <div id="vote-reveal" style="display:flex; justify-content:center; gap:10px; margin-top:10px;"></div>
+                </div>
+                <button class="btn" onclick="nextRound()" id="next-round-btn" style="display:none; margin-top: 20px;">下一輪 (Next)</button>
+                <div id="waiting-host-msg" style="text-align:center; font-size:0.8rem; margin-top: 10px;">等待主持人進入下一輪...</div>
+            </div>
+        </div>
+
+        <!-- Page 5: Assassin -->
+        <div id="page-5" class="page" style="background-color: #000; color: #fff;">
+             <!-- Placeholder -->
+        </div>
+
+        <!-- Page 6: Final -->
+        <div id="page-6" class="page">
+            <h2>最終結局</h2>
+            <div class="case-file">
+                <h1 id="final-winner" style="color: var(--accent-red); border:none;"></h1>
+                <p id="final-reason"></p>
+                <hr style="border-top: 1px dashed #000;">
+                <div id="final-roles-reveal" style="text-align: left; font-size: 0.9rem;"></div>
+            </div>
+            <button class="btn" onclick="goToGiftSection()">前往怪禮物抽獎</button>
+        </div>
+
+        <!-- Page 7: Gift -->
+        <div id="page-7" class="page">
+            <h2>沒人想要你的禮物（怪禮物）交換</h2>
+            <p>請選擇您帶來的禮物號碼</p>
+            <div id="my-gift-select" style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom: 20px;"></div>
+            <div id="draw-section" style="width: 100%; text-align: center; display:none;">
+                <button class="btn" style="background: var(--accent-red); border-color: var(--accent-red);" onclick="luckyDraw()">開始抽獎</button>
+            </div>
+            <div id="draw-result" style="margin-top: 20px; width: 100%;"></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtFUh2OUigNcuxU4p3qFUPdq6RM-hLnQ4",
+            authDomain: "christmas-game-81e58.firebaseapp.com",
+            databaseURL: "https://christmas-game-81e58-default-rtdb.firebaseio.com",
+            projectId: "christmas-game-81e58",
+            storageBucket: "christmas-game-81e58.firebasestorage.app",
+            messagingSenderId: "76914667234",
+            appId: "1:76914667234:web:a03080c958af3a0fab38bb"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const PLAYERS_LIST = ["Skai", "Joyce", "Katie", "Jasmine", "Macy", "Ching", "Bowie", "Carman"];
+        const GIFT_RULES = ["外貌古怪", "用途古怪", "整體詭異"];
+        const GIFT_DESCRIPTIONS = {
+            "外貌古怪": "讓人看第一眼就想移開視線。",
+            "用途古怪": "知道怎麼用，但不知道為什麼要用。",
+            "整體詭異": "散發著一股不屬於這個次元的氣息。"
+        };
+        const AVATAR_SEEDS = ["Felix", "Aneka", "Snuggles", "Midnight", "Cuddles", "Shadow", "Ginger", "Boots"];
+        const ROUND_CONFIG = [3, 3, 4];
+        const GAME_SCENARIOS = {
+            1: {
+                title: "第一輪：採購食材與裝飾 (3人執行)",
+                leader_rule: "【雙線作戰指揮令】\n本輪分為[採購組]與[裝飾組]。領袖需決定親自帶領哪一組，並任命一名副領袖帶領另外一組。\n領袖們需要說出關鍵詞，觀察臥底是誰。\n採購組：購物車神聖不可侵犯，必須經領袖批准。\n裝飾組：裝飾位置必須由領袖決定。",
+                detective: {
+                    keyword: "<br>【採購組】關鍵詞：當提及 「貴」 / 「預算」 / 「沒錢」 等價格敏感話題時。 <span class='secret-highlight'>反應：大手一揮說『黎都黎了！』或『買！』</span><br>【裝飾組】提及『這裡/那邊+比劃』<span class='secret-highlight'>反應：豎拇指說『特別好！』</span>",
+                    action: "<span class='secret-highlight'>聽從領袖現實工作分配。當暗號觸發時，自然執行上述動作。"
+                },
+                undercover: {
+                    hint: "<br>【採購組】關鍵詞：當提及*****  <span class='secret-highlight'>反應：豪爽</span><br>【裝飾組】關機詞：當提及*****<span class='secret-highlight'>反應：高度讚賞</span>",
+                    action: "<span class='secret-highlight'>假裝做事。聽到關鍵詞時，根據提示並觀察別人，作出偵探們可能會有的反應。</span>"
+                }
+            },
+            2: {
+                title: "第二輪：備料環節 (3人執行)",
+                leader_rule: "【廚房主理人】\n所有食材處理順序、人員分配由領袖指派。領袖未下令，不得私自拆封食材。",
+                detective: {
+                    keyword: "<br>關鍵詞：當提及『小心/刀/危險/流血』  <span class='secret-highlight'>反應：立刻停手，連說兩次『沒事、沒事』。</span>",
+                    action: "<span class='secret-highlight'>聽從領袖現實工作分配。當暗號觸發時，自然執行上述動作。"
+                },
+                undercover: {
+                    hint: "<br>關鍵詞：當提及*****  <span class='secret-highlight'>反應：（語言回應）表示安撫/狀況解除</span>",
+                    action: "<span class='secret-highlight'>假裝做事。聽到關鍵詞時，根據提示並觀察別人，作出偵探們可能會有的反應。</span>"
+                }
+            },
+            3: {
+                title: "第三輪：燒烤開始 (4人執行)",
+                leader_rule: "【篝火審判官】\n燒烤順序與享用順序由領袖裁決。領袖有權決定『加蜂蜜/還是孜然粉』。",
+                detective: {
+                    keyword: "<br>關鍵詞：當提及『熟了/可以吃/焦了』<span class='secret-highlight'>反應：舉起餐具指天（像舉劍一樣）。</span>",
+                    action: "<span class='secret-highlight'>聽從領袖現實工作分配。當暗號觸發時，自然執行上述動作。"
+                },
+                undercover: {
+                    hint: "<br>關鍵詞：當提及*****  <span class='secret-highlight'>反應：（物品互動）餐具相關</span>",
+                    action: "<span class='secret-highlight'>假裝做事。聽到關鍵詞時，根據提示並觀察別人，作出偵探們可能會有的反應。</span>"
+                }
+            }
+        };
+        const ROLE_MAP = { 'God': '猜忌之神', 'Detective': '偵探', 'Undercover': '臥底', 'Assassin': '刺客' };
+
+        let myName = localStorage.getItem("u_name") || "";
+        let selectedAvatar = null;
+        let currentFileIndex = 0;
+        let serverData = {};
+        let mySelectedTeam = [];
+        let myAssassinTarget = null;
+        let myGiftNum = null;
+        let discussionInterval = null; 
+
+        // [修復] 全局點擊音效
+        document.addEventListener('click', function(e) {
+            // 使用 closest 查找最近的按鈕元素
+            const btn = e.target.closest('button') || e.target.closest('.btn') || e.target.closest('.nav-btn') || e.target.closest('.avatar-option') || e.target.closest('.player-tile') || e.target.closest('.vote-btn') || e.target.closest('.number-btn');
+            
+            if (btn) {
+                document.getElementById('sfx-click').currentTime = 0;
+                document.getElementById('sfx-click').play().catch(e => {});
+            }
+        });
+
+        window.onload = function() { renderAvatarGrid(); };
+
+        db.ref('game').on('value', (snap) => {
+            document.getElementById('loading').style.display = 'none';
+            const data = snap.val();
+            if (!data) return;
+            serverData = data;
+            
+            // 當有人確認身份時，刷新檔案卡片
+            if (document.getElementById('page-1').classList.contains('active')) {
+                updateFileCardDisplay();
+            }
+
+            handleStateTransition(data);
+        });
+
+        function handleStateTransition(data) {
+            const state = data.state;
+            const amIRegistered = myName && data.players && data.players[myName] && data.players[myName].joined;
+
+            if (state === 1) {
+                if (amIRegistered) {
+                    const currentPage = document.querySelector('.page.active').id;
+                    if (currentPage === 'page-0' || currentPage === 'page-1') showGlobalPage('fingerprint'); 
+                } else {
+                    if (document.getElementById('page-1').classList.contains('active')) updateFileCardDisplay();
+                }
+            } 
+            else if (state === 2) {
+                if (amIRegistered) {
+                    const currentPage = document.querySelector('.page.active').id;
+                    if (currentPage === 'page-0' || currentPage === 'page-1') showGlobalPage('fingerprint'); 
+                    if (currentPage === 'page-2') updateLobbyInfo(); 
+                } 
+            }
+            else if (state === 4) { showGlobalPage('4'); renderGamePhase(data); }
+            else if (state === 5) { showGlobalPage('5'); setupAssassinPhase(data); }
+            else if (state === 6) { showGlobalPage('6'); renderFinalResult(data); }
+            else if (state === 7) { showGlobalPage('7'); initGiftPage(); }
+            else if (state === 0) { showGlobalPage('0'); }
+        }
+
+        window.tryStartGame = async () => { showGlobalPage('1'); };
+
+        function showGlobalPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const targetId = pageId.startsWith('page-') ? pageId : `page-${pageId}`;
+            const target = document.getElementById(targetId);
+            if (target) target.classList.add('active');
+            
+            if (pageId === '1') { updateFileCardDisplay(); renderAvatarGrid(); }
+            if (pageId === '3') { updateDecoRuleText(); } 
+            if (pageId === 'dossier') { revealDossierContent(); }
+        }
+
+        window.showLocalPage = (pageId) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            let target = pageId;
+            if (pageId === 4.1) target = "4-1"; 
+            document.getElementById(`page-${target}`).classList.add('active');
+            if (pageId === '7') initGiftPage();
+            if (pageId === 3 || pageId === '3') updateDecoRuleText();
+            if (pageId === 'dossier') { revealDossierContent(); }
+        }
+
+        async function updateDecoRuleText() {
+            let snap = await db.ref(`game/players/${myName}`).get();
+            let pData = snap.val();
+            if (!pData || !pData.role) return;
+            const decoText = document.getElementById('mission-deco-text');
+            if (pData.role === 'Undercover' || pData.role === 'Assassin') {
+                decoText.innerText = "請購買『壞裝飾』擾亂派對，預算金額為30-50元。";
+                decoText.style.color = "var(--fail-red)";
+                decoText.style.fontWeight = "bold";
+            } else {
+                decoText.innerText = "請購買『好裝飾』讓派對進行順利，預算金額為30-50元。";
+                decoText.style.color = "var(--ink)";
+                decoText.style.fontWeight = "bold";
+            }
+            if (pData.giftRule) {
+                document.getElementById('gift-rule-btn').style.display = 'none';
+                document.getElementById('gift-rule-display').style.display = 'block';
+                const rule = document.getElementById('gift-rule-text');
+                const desc = document.getElementById('gift-rule-desc');
+                rule.innerText = pData.giftRule;
+                desc.innerText = GIFT_DESCRIPTIONS[pData.giftRule] || "";
+                rule.classList.add('stamp-animate');
+            }
+        }
+
+        window.changeFile = (direction) => {
+            closeFileAvatarSection();
+            currentFileIndex += direction;
+            if (currentFileIndex < 0) currentFileIndex = PLAYERS_LIST.length - 1;
+            if (currentFileIndex >= PLAYERS_LIST.length) currentFileIndex = 0;
+            updateFileCardDisplay();
+        };
+
+        function updateFileCardDisplay() {
+            const name = PLAYERS_LIST[currentFileIndex];
+            document.getElementById('file-name').innerText = name;
+            document.getElementById('file-number').innerText = (currentFileIndex + 1).toString().padStart(2, '0');
+            const isTaken = serverData.players && serverData.players[name] && serverData.players[name].joined;
+            const isMe = (name === myName);
+            const btn = document.getElementById('select-name-btn');
+            const status = document.getElementById('file-status');
+            if (isTaken && !isMe) { status.innerText = "LOCKED"; status.classList.add('taken'); btn.disabled = true; btn.innerText = "此檔案已被鎖定"; btn.style.opacity = 0.5; }
+            else { status.innerText = "AVAILABLE"; status.classList.remove('taken'); btn.disabled = false; btn.innerText = "開啟檔案 (SELECT)"; btn.style.opacity = 1; }
+        }
+
+        window.openFileAvatarSection = () => { 
+            document.getElementById('select-name-btn').style.display = 'none'; 
+            document.getElementById('avatar-section').style.display = 'block'; 
+            myName = PLAYERS_LIST[currentFileIndex]; 
+            renderAvatarGrid(); 
+        };
+
+        window.closeFileAvatarSection = () => { document.getElementById('select-name-btn').style.display = 'block'; document.getElementById('avatar-section').style.display = 'none'; selectedAvatar = null; document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected')); document.getElementById('confirm-btn').disabled = true; };
+        
+        function renderAvatarGrid() {
+            const grid = document.getElementById('avatar-selection-grid');
+            if (grid.children.length > 0) return;
+            AVATAR_SEEDS.forEach(seed => {
+                const div = document.createElement('div'); div.className = 'avatar-option';
+                const url = `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}`;
+                div.innerHTML = `<img src="${url}" class="avatar-img">`;
+                div.onclick = () => { document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); selectedAvatar = url; document.getElementById('confirm-btn').disabled = false; };
+                grid.appendChild(div);
+            });
+        }
+
+        window.confirmIdentity = () => {
+            if (!myName || !selectedAvatar) return;
+            localStorage.setItem("u_name", myName);
+            window.showLocalPage('fingerprint');
+            db.ref(`game/players/${myName}`).update({ joined: true, avatar: selectedAvatar }).then(() => {
+                checkAndStartGameLogic();
+            });
+        };
+
+        async function checkAndStartGameLogic() {
+            db.ref('game').transaction((gameData) => {
+                if (gameData && !gameData.rolesAssigned) {
+                    let roles = ["God", "Detective", "Detective", "Detective", "Detective", "Detective", "Undercover", "Assassin"];
+                    for (let i = roles.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [roles[i], roles[j]] = [roles[j], roles[i]]; }
+                    if (!gameData.players) gameData.players = {};
+                    PLAYERS_LIST.forEach((p, i) => {
+                        if (!gameData.players[p]) gameData.players[p] = {};
+                        gameData.players[p].role = roles[i];
+                        gameData.players[p].giftRule = ""; 
+                    });
+                    gameData.rolesAssigned = true;
+                    gameData.state = 2; 
+                }
+                return gameData;
+            });
+        }
+
+        window.unlockDossier = () => { window.showLocalPage('dossier'); revealDossierContent(); };
+        window.enterLobby = () => { window.showLocalPage('2'); updateLobbyInfo(); };
+
+        async function revealDossierContent() {
+            const snap = await db.ref(`game/players/${myName}`).get();
+            let pData = snap.val();
+            if (!pData || !pData.role) { setTimeout(() => revealDossierContent(), 1000); return; }
+            document.getElementById('dossier-codename').innerText = myName;
+            if(pData.avatar) document.getElementById('dossier-photo').src = pData.avatar;
+            const stamp = document.getElementById('dossier-role-stamp');
+            const desc = document.getElementById('dossier-objective');
+            const teamInfo = document.getElementById('dossier-teammates');
+            stamp.classList.remove('stamp-animate'); void stamp.offsetWidth; stamp.classList.add('stamp-animate');
+            const roleName = ROLE_MAP[pData.role];
+            stamp.innerText = roleName;
+            document.getElementById('dossier-role').innerText = roleName;
+            if (pData.role === 'God') {
+                stamp.style.color = "purple"; desc.innerText = "你是這場派對的靈魂人物。你知道誰是壞人，但你必須隱藏身份。";
+                const badGuys = Object.entries(serverData.players).filter(([k,v]) => v.role === 'Undercover' || v.role === 'Assassin').map(([k,v]) => k);
+                teamInfo.style.display = 'block'; teamInfo.innerText = `嫌疑名單 (壞人): ${badGuys.join(', ')}`;
+            } else if (pData.role === 'Detective') {
+                stamp.style.color = "#111"; desc.innerText = "你只知道自己是好人，必須透過觀察和投票找出值得信任的夥伴，完成派對任務。";
+                teamInfo.style.display = 'none';
+            } else if (pData.role === 'Undercover') {
+                stamp.style.color = "var(--fail-red)"; desc.innerText = "你的任務是協助刺客，在不被發現的情況下破壞派對任務。";
+                const teammates = Object.entries(serverData.players).filter(([k,v]) => v.role === 'Assassin').map(([k,v]) => k);
+                teamInfo.style.display = 'block'; teamInfo.innerText = `你的刺客隊友: ${teammates.join(', ')}`;
+            } else if (pData.role === 'Assassin') {
+                stamp.style.color = "var(--fail-red)"; desc.innerText = "破壞任務。如果偵探贏了，你還有最後一次機會：找出誰是「猜忌之神」並刺殺他。";
+                const teammates = Object.entries(serverData.players).filter(([k,v]) => v.role === 'Undercover').map(([k,v]) => k);
+                teamInfo.style.display = 'block'; teamInfo.innerText = `你的臥底隊友: ${teammates.join(', ')}`;
+            }
+        }
+
+        async function updateLobbyInfo() {
+            document.getElementById('lobby-player-name').innerText = myName;
+            const snap = await db.ref(`game/players/${myName}`).get();
+            const pData = snap.val();
+            if (pData && pData.avatar) document.getElementById('lobby-avatar-img').src = pData.avatar;
+            if (pData && pData.role) {
+                document.getElementById('lobby-player-role').innerText = `[ ${ROLE_MAP[pData.role]} ]`;
+                const hidden = document.getElementById('lobby-player-role').classList.contains('blur-text');
+                document.getElementById('lobby-player-role').className = hidden ? "blur-text" : "reveal-text";
+            }
+            const results = serverData.questResults || []; const percent = results.length * 33.33; document.getElementById('lobby-progress').style.width = percent + '%';
+        }
+        window.toggleRoleVisibility = () => { const el = document.getElementById('lobby-player-role'); el.className = el.classList.contains('blur-text') ? "reveal-text" : "blur-text"; };
+        
+        window.revealRule = async () => {
+            const snap = await db.ref(`game/players/${myName}`).get(); let pData = snap.val();
+            if (!pData || !pData.giftRule) { const rule = GIFT_RULES[Math.floor(Math.random() * GIFT_RULES.length)]; await db.ref(`game/players/${myName}/giftRule`).set(rule); pData = { ...pData, giftRule: rule }; }
+            document.getElementById('gift-rule-btn').style.display = 'none'; document.getElementById('gift-rule-display').style.display = 'block';
+            const ruleText = document.getElementById('gift-rule-text'); const ruleDesc = document.getElementById('gift-rule-desc');
+            ruleText.innerText = pData.giftRule; ruleDesc.innerText = GIFT_DESCRIPTIONS[pData.giftRule] || ""; ruleText.classList.remove('stamp-animate'); void ruleText.offsetWidth; ruleText.classList.add('stamp-animate');
+        };
+
+        window.enterMainGame = () => {
+            const isUnlocked = localStorage.getItem("file2_unlocked");
+            if (!isUnlocked) {
+                let password = prompt("⚠ RESTRICTED AREA ⚠\n請輸入案件密碼：");
+                if (password !== "1264") {
+                    alert("存取被拒 (ACCESS DENIED)");
+                    return;
+                }
+                localStorage.setItem("file2_unlocked", "true");
+            }
+
+            window.showLocalPage('4');
+            if (!serverData.roundPhase) {
+                const randomLeader = Math.floor(Math.random() * PLAYERS_LIST.length);
+                db.ref('game').update({ state: 4, currentRound: 1, leaderIndex: randomLeader, roundPhase: 'intro', questResults: [] });
+            }
+        };
+
+        // --- 核心遊戲流程控制 ---
+        function renderGamePhase(data) {
+            const round = data.currentRound || 1;
+            const safeLeaderIndex = (data.leaderIndex >= 0 && data.leaderIndex < PLAYERS_LIST.length) ? data.leaderIndex : 0;
+            const leaderName = PLAYERS_LIST[safeLeaderIndex];
+            const phase = data.roundPhase || 'intro';
+            
+            document.getElementById('round-indicator').innerText = `ROUND ${round} / 3`;
+            updateScoreboard(data);
+            
+            ['phase-round-intro', 'phase-rules', 'phase-discussion', 'phase-assignment', 'phase-mission', 'phase-result'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+
+            if (phase !== 'discussion' && discussionInterval) {
+                clearInterval(discussionInterval);
+                discussionInterval = null;
+            }
+
+            if (phase === 'intro') {
+                document.getElementById('phase-round-intro').style.display = 'block';
+                const scenario = GAME_SCENARIOS[round];
+                document.getElementById('intro-title').innerText = scenario.title;
+                document.getElementById('intro-leader-name').innerText = leaderName;
+            } 
+            else if (phase === 'rules') {
+                document.getElementById('phase-rules').style.display = 'block';
+                const scenario = GAME_SCENARIOS[round];
+                document.getElementById('rules-public-display').innerText = scenario.leader_rule;
+                
+                const myRole = data.players[myName].role;
+                const amILeader = (myName === leaderName);
+                const isBadGuy = (myRole === 'Undercover' || myRole === 'Assassin');
+                let secretMissionText = "";
+
+                if (isBadGuy) {
+                    if (amILeader) {
+                         secretMissionText = "<strong style='color:var(--accent-red)'>[間諜領袖特權] 偵探暗號：</strong><br>" + scenario.detective.keyword + "<br>" + scenario.detective.action;
+                    } else {
+                         secretMissionText = scenario.undercover.hint + "<br>" + scenario.undercover.action;
+                    }
+                } else {
+                    secretMissionText = scenario.detective.keyword + "<br>" + scenario.detective.action;
+                }
+                
+                document.getElementById('rules-secret-display').innerHTML = secretMissionText;
+                document.querySelectorAll('.flip-container').forEach(el => el.classList.remove('flipped'));
+
+                if (amILeader) {
+                    document.getElementById('leader-start-discussion-btn').style.display = 'block';
+                    document.getElementById('member-waiting-rules').style.display = 'none';
+                } else {
+                    document.getElementById('leader-start-discussion-btn').style.display = 'none';
+                    document.getElementById('member-waiting-rules').style.display = 'block';
+                }
+            }
+            else if (phase === 'discussion') {
+                document.getElementById('phase-discussion').style.display = 'block';
+                
+                // 討論環節第一次進入時播放警惕鈴聲
+                if (!discussionInterval) { 
+                     document.getElementById('sfx-alert').play().catch(e => {});
+                }
+
+                const scenario = GAME_SCENARIOS[round];
+                const myRole = data.players[myName].role;
+                const amILeader = (myName === leaderName);
+                const isBadGuy = (myRole === 'Undercover' || myRole === 'Assassin');
+                let secretMissionText = "";
+                if (isBadGuy) {
+                    if (amILeader) secretMissionText = "<strong style='color:var(--accent-red)'>[間諜領袖特權] 偵探暗號：</strong><br>" + scenario.detective.keyword + "<br>" + scenario.detective.action;
+                    else secretMissionText = scenario.undercover.hint + "<br>" + scenario.undercover.action;
+                } else {
+                    secretMissionText = scenario.detective.keyword + "<br>" + scenario.detective.action;
+                }
+                document.getElementById('rules-secret-display-discussion').innerHTML = secretMissionText;
+
+                const endTime = data.discussionEndTime || 0;
+                if (!discussionInterval) {
+                    const display = document.getElementById('timer-display');
+                    discussionInterval = setInterval(() => {
+                        const now = Date.now(); 
+                        const timeLeft = Math.floor((endTime - now) / 1000);
+
+                        if (timeLeft < 0) {
+                            clearInterval(discussionInterval);
+                            display.innerText = "00:00";
+                            if (myName === leaderName) { startAssignmentPhase(); } 
+                        } else {
+                            let m = Math.floor(timeLeft / 60);
+                            let s = timeLeft % 60;
+                            display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                        }
+                    }, 500); 
+                }
+            }
+            else if (phase === 'assignment') {
+                document.getElementById('phase-assignment').style.display = 'block';
+                if (myName === leaderName) {
+                    document.getElementById('leader-controls').style.display = 'block';
+                    document.getElementById('member-waiting-assignment').style.display = 'none';
+                    renderTeamSelectGrid(round);
+                } else {
+                    document.getElementById('leader-controls').style.display = 'none';
+                    document.getElementById('member-waiting-assignment').style.display = 'block';
+                }
+            } 
+            else if (phase === 'mission') {
+                document.getElementById('phase-mission').style.display = 'block';
+                const team = data.currentTeam || [];
+                document.getElementById('mission-team-names').innerText = team.join(', ');
+                const myVotes = data.missionVotes || {};
+                
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = 1;
+                    btn.innerText = (btn.id === 'vote-btn-success') ? '任務成功' : '任務失敗';
+                });
+
+                if (team.includes(myName) && (myVotes[myName] === undefined)) {
+                    document.getElementById('voting-area').style.display = 'block';
+                    document.getElementById('voting-wait').style.display = 'none';
+                    const myRole = data.players[myName].role;
+                    if (myRole === 'Detective' || myRole === 'God') {
+                        document.getElementById('vote-btn-fail').disabled = true;
+                        document.getElementById('vote-btn-fail').style.opacity = 0.3;
+                        document.getElementById('good-guy-warning').style.display = 'block';
+                    } else {
+                        document.getElementById('vote-btn-fail').disabled = false;
+                        document.getElementById('good-guy-warning').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('voting-area').style.display = 'none';
+                    document.getElementById('voting-wait').style.display = 'block';
+                    document.getElementById('voting-wait').innerText = team.includes(myName) ? "已提交" : "等待成員執行...";
+                }
+            } 
+            else if (phase === 'result') {
+                document.getElementById('phase-result').style.display = 'block';
+                const votes = Object.values(data.missionVotes || {});
+                const failCount = votes.filter(v => v === false).length;
+                const resultText = document.getElementById('round-result-text');
+                const revealDiv = document.getElementById('vote-reveal');
+                if (failCount > 0) { resultText.innerText = "任務失敗"; resultText.style.color = "var(--fail-red)"; }
+                else { resultText.innerText = "任務成功"; resultText.style.color = "var(--success-green)"; }
+                revealDiv.innerHTML = '';
+                votes.sort(() => Math.random() - 0.5);
+                votes.forEach(v => { const span = document.createElement('span'); span.innerText = v ? "⭕" : "❌"; span.style.fontSize = "1.5rem"; revealDiv.appendChild(span); });
+                document.getElementById('next-round-btn').style.display = 'block';
+                document.getElementById('waiting-host-msg').style.display = 'none';
+            }
+        }
+
+        window.startRoundRules = () => { db.ref('game').update({ roundPhase: 'rules' }); };
+        window.startRoundDiscussion = () => { const endTime = Date.now() + 180000; db.ref('game').update({ roundPhase: 'discussion', discussionEndTime: endTime }); };
+        window.startAssignmentPhase = () => { db.ref('game').update({ roundPhase: 'assignment' }); };
+        window.confirmAssignment = () => { db.ref('game').update({ roundPhase: 'mission', currentTeam: mySelectedTeam, missionVotes: null }); };
+
+        function updateScoreboard(data) {
+            const scores = data.questResults || [];
+            for (let i = 0; i < 3; i++) {
+                const elGame = document.getElementById(`game-score-${i+1}`);
+                if (!elGame) continue;
+                elGame.className = 'score-circle';
+                if (i < scores.length) { 
+                    const status = scores[i] ? 'success' : 'fail';
+                    elGame.classList.add(status); 
+                } else if (i === scores.length) { 
+                    elGame.classList.add('current'); 
+                }
+            }
+        }
+
+        window.renderTeamSelectGrid = (round) => {
+            const grid = document.getElementById('team-select-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            mySelectedTeam = [];
+            const btn = document.getElementById('confirm-team-btn');
+            btn.disabled = true;
+            btn.innerText = "確認指派 (CONFIRM)";
+            btn.style.backgroundColor = '#999';
+
+            PLAYERS_LIST.forEach(p => {
+                const div = document.createElement('div'); div.className = 'player-tile'; div.innerText = p;
+                div.onclick = () => {
+                    if (mySelectedTeam.includes(p)) { 
+                        mySelectedTeam = mySelectedTeam.filter(n => n !== p); div.classList.remove('selected'); 
+                    } else { 
+                        if (mySelectedTeam.length < ROUND_CONFIG[round - 1]) { mySelectedTeam.push(p); div.classList.add('selected'); } 
+                    }
+                    const req = ROUND_CONFIG[round - 1];
+                    btn.disabled = (mySelectedTeam.length !== req);
+                    if (!btn.disabled) { btn.style.backgroundColor = 'var(--ink)'; btn.style.color = '#fff'; } 
+                    else { btn.style.backgroundColor = '#999'; btn.style.color = '#fff'; }
+                };
+                grid.appendChild(div);
+            });
+        };
+
+        window.submitMissionVote = (vote) => {
+            const btnSuccess = document.getElementById('vote-btn-success');
+            const btnFail = document.getElementById('vote-btn-fail');
+            
+            btnSuccess.disabled = true;
+            btnFail.disabled = true;
+            
+            if (vote) {
+                btnSuccess.innerHTML = "已提交 (成功)";
+                btnSuccess.style.opacity = "1";
+                btnFail.style.opacity = "0.3";
+            } else {
+                btnFail.innerHTML = "已提交 (失敗)";
+                btnFail.style.opacity = "1";
+                btnSuccess.style.opacity = "0.3";
+            }
+
+            db.ref(`game/missionVotes/${myName}`).set(vote).then(() => {
+                checkMissionComplete();
+            });
+        };
+
+        async function checkMissionComplete() {
+            const snap = await db.ref('game').get();
+            const data = snap.val();
+            if (Object.keys(data.missionVotes || {}).length === data.currentTeam.length) db.ref('game').update({ roundPhase: 'result' });
+        }
+        window.nextRound = async () => {
+            const snap = await db.ref('game').get();
+            const data = snap.val();
+            const votes = Object.values(data.missionVotes || {});
+            const isSuccess = (votes.filter(v => v === false).length === 0);
+            const newResults = data.questResults || [];
+            newResults.push(isSuccess);
+            const failTotal = newResults.filter(r => r === false).length;
+            const successTotal = newResults.filter(r => r === true).length;
+            if (failTotal >= 2) db.ref('game').update({ state: 6, finalWinner: 'Evil', questResults: newResults });
+            else if (successTotal >= 2) db.ref('game').update({ state: 5, questResults: newResults });
+            else db.ref('game').update({ currentRound: (data.currentRound || 1) + 1, leaderIndex: ((data.leaderIndex || 0) + 1) % PLAYERS_LIST.length, roundPhase: 'intro', questResults: newResults, currentTeam: null, missionVotes: null });
+        };
+
+        function setupAssassinPhase(data) {
+            const page5 = document.getElementById('page-5');
+            page5.innerHTML = `
+                <div id="sniper-layer" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;">
+                    <h2 style="color: white; margin-bottom: 20px; text-align: center; font-family: var(--font-en);">拖動準心鎖定「猜忌之神」</h2>
+                    <div id="assassin-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; padding: 20px; width: 100%; max-width: 400px;"></div>
+                    <div style="margin-top: 30px; text-align: center; color: red; font-family: var(--font-en); font-size: 1.5rem; font-weight:bold;">TARGET: <span id="locked-target">NONE</span></div>
+                    <button id="fire-btn" onclick="fireAssassin()" style="margin-top: 20px; background: red; color: white; border: 2px solid white; padding: 15px 30px; font-weight: bold; cursor: pointer; font-family: var(--font-en); letter-spacing: 2px;" disabled>FIRE</button>
+                </div>
+            `;
+            if (data.players[myName].role !== 'Assassin') { page5.innerHTML = `<h1 style="color:red; text-align:center; margin-top:50px;">ASSASSIN IS AIMING...</h1>`; return; }
+            const grid = document.getElementById('assassin-grid');
+            PLAYERS_LIST.forEach(p => {
+                if (serverData.players[p].role === 'Undercover' || serverData.players[p].role === 'Assassin') return;
+                const div = document.createElement('div'); div.className = 'player-tile'; div.innerText = p;
+                div.onclick = () => {
+                    document.querySelectorAll('#assassin-grid .player-tile').forEach(el => { el.style.backgroundColor = '#fff'; el.style.color = '#000'; el.style.borderColor = '#000'; });
+                    div.style.backgroundColor = 'red'; div.style.color = 'white'; div.style.borderColor = 'white';
+                    myAssassinTarget = p; document.getElementById('locked-target').innerText = p; document.getElementById('fire-btn').disabled = false;
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        window.fireAssassin = () => {
+            if (!myAssassinTarget) return;
+            const targetRole = serverData.players[myAssassinTarget].role;
+            db.ref('game').update({ state: 6, finalWinner: (targetRole === 'God' ? 'Evil' : 'Good'), assassinTarget: myAssassinTarget });
+        };
+
+        function renderFinalResult(data) {
+            const winner = data.finalWinner;
+            const title = document.getElementById('final-winner');
+            const reason = document.getElementById('final-reason');
+            const rolesBox = document.getElementById('final-roles-reveal');
+            
+            // 懲罰與獎勵變量
+            let punishmentText = "";
+            let specialRewardHTML = "";
+
+            if (winner === 'Evil') {
+                title.innerText = "臥底陣營獲勝！"; title.style.color = "var(--fail-red)";
+                reason.innerText = data.assassinTarget ? `刺客成功擊殺猜忌之神 (${data.assassinTarget})！` : "臥底破壞了兩次任務。";
+                
+                punishmentText = "😈 懲罰時刻：請臥底陣營決定如何懲罰偵探陣營！";
+                
+                const successCount = (data.questResults || []).filter(r => r === true).length;
+                if (successCount >= 2 && data.assassinTarget) {
+                     specialRewardHTML = `<div class='special-reward'>🎁 刺客表現卓越：獲得「怪禮物強行交換卡」</div>`;
+                }
+
+            } else {
+                title.innerText = "偵探陣營獲勝！"; title.style.color = "var(--success-green)";
+                reason.innerText = `刺客失敗 (目標: ${data.assassinTarget || '無'})，好人守護了派對！`;
+                
+                punishmentText = "😇 懲罰時刻：請偵探陣營決定如何懲罰臥底陣營！";
+
+                specialRewardHTML = `<div class='special-reward'>🎁 猜忌之神存活：獲得「怪禮物強行交換卡」</div>`;
+            }
+
+            let html = "<h3>身份揭曉：</h3>";
+            Object.entries(data.players).forEach(([name, p]) => {
+                let color = (p.role === 'Undercover' || p.role === 'Assassin') ? 'red' : 'black';
+                html += `<div style="color:${color}">${name}: ${ROLE_MAP[p.role]}</div>`;
+            });
+            
+            html += `<div class="punishment-box">
+                        <p style="font-weight:bold; margin:0;">${punishmentText}</p>
+                        ${specialRewardHTML}
+                     </div>`;
+
+            rolesBox.innerHTML = html;
+        }
+
+        window.goToGiftSection = () => { db.ref('game').update({ state: 7 }); window.showLocalPage(7); };
+        function initGiftPage() { const container = document.getElementById('my-gift-select'); container.innerHTML = ''; for(let i=1; i<=8; i++) { const btn = document.createElement('div'); btn.className = 'number-btn'; btn.innerText = i; btn.onclick = () => { document.querySelectorAll('.number-btn').forEach(c => c.classList.remove('selected')); btn.classList.add('selected'); myGiftNum = i; document.getElementById('draw-section').style.display = 'block'; }; container.appendChild(btn); } }
+        
+        window.luckyDraw = () => { 
+            if (!myGiftNum) return; 
+            const resultDiv = document.getElementById('draw-result'); resultDiv.innerHTML = '<p>抽獎中...</p>'; 
+            setTimeout(() => { 
+                const isInterference = Math.random() < 0.3; 
+                if (isInterference) { 
+                    const cards = ["情報洩漏<br><small>請與你的鄰座互換禮物</small>", "駭客入侵<br><small>全體重抽</small>", "干擾卡三：匿名舉報<br><small>指定一人先拆禮物</small>"]; 
+                    const card = cards[Math.floor(Math.random() * cards.length)]; 
+                    document.getElementById('interference-text').innerHTML = card; 
+                    document.getElementById('interference-fullscreen').style.display = 'flex'; 
+                } else { 
+                    let possible = []; for(let i=1; i<=8; i++) { if (i !== myGiftNum) possible.push(i); } 
+                    const drawn = possible[Math.floor(Math.random() * possible.length)]; 
+                    resultDiv.innerHTML = `<div class="case-file"><h3>🎁 恭喜獲得</h3><h1 style="font-size: 4rem; color: var(--accent-red); border:none;">${drawn}</h1><p>號禮物</p></div>`; 
+                } 
+            }, 1000); 
+        };
+
+        window.hardReset = () => { if(confirm("【警告】這將清空所有玩家資料並重新開始。確定嗎？")) { db.ref('game').set({ state: 0 }).then(() => location.reload()); } };
+    </script>
+</body>
+</html>
