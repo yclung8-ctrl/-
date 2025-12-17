@@ -2021,15 +2021,32 @@ function checkMyTurn() {
             }, 1000); 
         };
 
+// 修改後：手機版萬能遙控器
         window.hardReset = () => { 
-            let pass = prompt("系統重置需要管理員密碼：");
+            let pass = prompt("🔧 管理員緊急後台 🔧\n\n1264 = 全局重置\nunlock = 強制解鎖按鈕\nforce6 = 跳結局\nforce7 = 跳怪禮物\n\n請輸入指令：");
+            
             if (pass === "1264") {
                 if(confirm("【警告】這將清空所有玩家資料並重新開始。確定嗎？")) { 
                     localStorage.clear();
                     db.ref('game').set({ state: 0 }).then(() => location.reload()); 
                 } 
-            } else {
-                if (pass !== null) alert("密碼錯誤");
+            } 
+            // --- 救命指令 ---
+            else if (pass === "unlock") {
+                // 如果懲罰按鈕卡住，輸入 unlock 就能解開
+                db.ref('game').update({ punishmentResult: "強制通過" });
+                alert("已強制解鎖按鈕！");
+            }
+            else if (pass === "force6") {
+                db.ref('game').update({ state: 6, finalWinner: 'Good' });
+                alert("已跳轉結局");
+            }
+            else if (pass === "force7") {
+                db.ref('game').update({ state: 7 });
+                alert("已跳轉怪禮物");
+            }
+            else {
+                if (pass !== null) alert("指令錯誤");
             }
         };
 
