@@ -2102,6 +2102,18 @@ function checkMyTurn() {
             alert("筆記已保存 (Saved Locally)");
             toggleNotebook();
         }
+        // --- 補上：贏家滿意驗證機制 ---
+        window.attemptFinishPunishment = () => {
+            // 跳出輸入框
+            let password = prompt("👑 贏家特權時刻 👑\n\n如果懲罰已執行完畢，且您感到身心愉悅\n請輸入「滿意」二字開啟下一關：");
+            
+            if (password === "滿意") {
+                alert("贏家表示滿意，放你們一馬！前往下一關！🚀");
+                goToGiftSection(); // 執行原本的跳轉函數
+            } else {
+                alert("⛔ 密碼錯誤！\n看來贏家還不滿意，請輸家繼續賣力表演！🤡");
+            }
+        };
     </script>
 </body>
 </html>
