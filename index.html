@@ -2021,16 +2021,26 @@ function checkMyTurn() {
             }, 1000); 
         };
 
-// 修改後：純淨版救援後台 (移除了危險的重置功能)
+// 修改後：補上 force2 提示 + 隱藏 1264 密碼
         window.hardReset = () => { 
-            // 這裡只顯示救命指令，不顯示重置，避免誤觸
-            let pass = prompt("🔧 管理員緊急後台 🔧\n\nunlock = 強制解鎖按鈕\nforce6 = 跳結局\nforce7 = 跳怪禮物\nforce2 = 回大廳\n\n請輸入指令：");
+            // 提示文字：補上了 force2，隱藏了 1264
+            let pass = prompt("🔧 管理員緊急後台 🔧\n\nunlock = 強制解鎖按鈕\nforce2 = 回大廳\nforce6 = 跳結局\nforce7 = 跳怪禮物\n\n請輸入指令：");
             
+            // --- 隱藏功能：輸入 1264 依然有效 ---
+            if (pass === "1264") {
+                if(confirm("【警告】這將清空所有玩家資料並重新開始。確定嗎？")) { 
+                    localStorage.clear();
+                    db.ref('game').set({ state: 0 }).then(() => location.reload()); 
+                } 
+            } 
             // --- 救命指令 ---
-            if (pass === "unlock") {
-                // 如果懲罰按鈕卡住，輸入 unlock 就能解開
+            else if (pass === "unlock") {
                 db.ref('game').update({ punishmentResult: "強制通過" });
                 alert("已強制解鎖按鈕！");
+            }
+            else if (pass === "force2") {
+                db.ref('game').update({ state: 2 });
+                alert("已跳轉大廳");
             }
             else if (pass === "force6") {
                 db.ref('game').update({ state: 6, finalWinner: 'Good' });
@@ -2040,12 +2050,7 @@ function checkMyTurn() {
                 db.ref('game').update({ state: 7 });
                 alert("已跳轉怪禮物");
             }
-            else if (pass === "force2") {
-                db.ref('game').update({ state: 2 });
-                alert("已跳轉大廳");
-            }
             else {
-                // 如果沒輸入或輸入錯了，什麼都不做 (這樣最安全)
                 if (pass !== null && pass !== "") alert("指令錯誤");
             }
         };
