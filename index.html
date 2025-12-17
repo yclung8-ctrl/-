@@ -124,6 +124,22 @@
         .avatar-option.selected { border-color: var(--accent-red); opacity: 1; box-shadow: 0 0 5px rgba(138, 3, 3, 0.5); transform: scale(1.1) rotate(-2deg); z-index: 5; background: white; }
         .avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
+        .birthday-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-bottom: 2px solid var(--ink);
+            background: transparent;
+            font-family: var(--font-en);
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--accent-red);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .birthday-input:focus { outline: none; border-bottom-color: var(--accent-red); }
+
         .nav-btn { position: absolute; top: 25px; background: rgba(43, 29, 29, 0.8); color: #fff; border: none; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; z-index: 50; display: flex; justify-content:center; align-items:center; transition: 0.2s; box-shadow: 0 4px 5px rgba(0,0,0,0.3); }
         .nav-btn:hover { background: var(--accent-red); transform: scale(1.1); } .nav-prev { left: 0; } .nav-next { right: 0; }
 
@@ -144,6 +160,20 @@
         .dossier-photo-frame { width: 110px; height: 130px; border: 4px solid #fff; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); background: #eee; position: relative; transform: rotate(2deg); }
         .dossier-photo-frame img { width: 100%; height: 100%; object-fit: cover; }
         
+        /* 生日帽樣式 */
+        .birthday-hat {
+            position: absolute;
+            top: -25px;
+            right: -25px;
+            font-size: 2.2rem;
+            transform: rotate(15deg);
+            z-index: 10;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
+            animation: bounce 2s infinite;
+            white-space: nowrap;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0) rotate(15deg); } 50% { transform: translateY(-5px) rotate(10deg); } }
+
         .rules-text { font-family: var(--font-cn); font-size: 0.9rem; line-height: 1.6; text-align: left; margin-top: 15px; color: #333; border-top: 1px dashed #aaa; padding-top: 10px; }
         .rules-text h4 { margin: 15px 0 5px 0; color: var(--accent-red); font-family: var(--font-hand); font-size: 1.6rem; font-weight: bold; }
         .rules-text ul { padding-left: 20px; margin: 5px 0; }
@@ -215,11 +245,16 @@
         /* --- 計時器 --- */
         #timer-display { font-family: var(--font-en); font-size: 4rem; text-align: center; margin: 20px 0; color: var(--ink); text-shadow: 2px 2px 0 rgba(0,0,0,0.2); font-weight: bold; }
 
+        /* 原始干擾樣式（保留給其他功能） */
         .interference-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--accent-red); color: white; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; animation: flash 0.5s infinite; display: none; cursor: pointer; }
         @keyframes flash { 0% { background: var(--accent-red); } 50% { background: #000; } 100% { background: var(--accent-red); } }
         
+        /* 靜態背景樣式 (無閃爍) 給生日彈窗 */
+        .static-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: white; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; display: none; cursor: default; }
+
         .number-btn { width: 50px; height: 50px; border: 2px solid var(--ink); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; cursor: pointer; background: #fff; transition: 0.2s; }
         .number-btn.selected { background: var(--accent-red); color: white; border-radius: 50%; border-color: var(--accent-red); transform: scale(1.2); }
+        .number-btn.disabled { opacity: 0.3; cursor: not-allowed; background: #ccc; border-color: #999; }
 
         .btn { background: var(--ink); color: var(--paper); border: 2px solid var(--ink); padding: 12px; font-family: var(--font-cn); font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; margin: 15px 0; letter-spacing: 1px; box-shadow: 3px 3px 0 rgba(138, 3, 3, 0.4); position: relative; }
         .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(138, 3, 3, 0.4); }
@@ -251,6 +286,144 @@
         /* 懲罰與獎勵文字樣式 */
         .punishment-box { border: 2px solid var(--ink); padding: 15px; margin-top: 15px; background-color: rgba(255,255,255,0.5); }
         .special-reward { font-family: var(--font-cn); color: #fff; background: var(--seal-red); padding: 5px 10px; border-radius: 5px; display: inline-block; margin-top: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); animation: breathing-glow 2s infinite; }
+
+        /* Emoji 裝飾選擇欄樣式 */
+        .emoji-scroll-wrapper {
+            display: flex; gap: 10px; overflow-x: auto; padding: 10px;
+            background: rgba(255,255,255,0.5); border: 2px dashed #aaa;
+            margin-top: 10px; scrollbar-width: none;
+        }
+        .emoji-scroll-wrapper::-webkit-scrollbar { display: none; }
+        .emoji-btn {
+            font-size: 2rem; cursor: pointer; padding: 5px; border-radius: 5px;
+            background: transparent; border: none; transition: 0.2s;
+            min-width: 50px; text-align: center;
+        }
+        .emoji-btn:hover { background: rgba(0,0,0,0.1); transform: scale(1.2); }
+        
+        /* 案件大廳頭像 Wrapper */
+        .lobby-avatar-wrapper {
+            position: relative; width: 70px; height: 70px;
+        }
+        .lobby-emoji-badge {
+            position: absolute; bottom: -5px; right: -5px;
+            font-size: 1.8rem; text-shadow: 2px 2px 0 #fff;
+            animation: bounce 2s infinite;
+        }
+
+        /* --- 新增設計：推理筆記本樣式 --- */
+        .notebook-trigger {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: var(--ink); color: var(--paper);
+            font-size: 1.5rem; border: 2px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 9000; cursor: pointer;
+            display: none; /* 預設隱藏，登入後顯示 */
+            justify-content: center; align-items: center;
+            transition: 0.3s;
+        }
+        .notebook-trigger:hover { transform: scale(1.1); background: var(--accent-red); }
+        
+        .notebook-paper {
+            background: #fff; width: 90%; max-width: 400px;
+            padding: 20px; border: 2px solid #333;
+            font-family: var(--font-cn); color: #333;
+            max-height: 80vh; overflow-y: auto;
+            background-image: linear-gradient(#e1e1e1 1px, transparent 1px);
+            background-size: 100% 1.5rem;
+            line-height: 1.5rem;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            transform: rotate(1deg);
+        }
+        .note-row {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; padding: 10px 0;
+        }
+        .note-name { font-weight: bold; font-family: var(--font-en); font-size: 1.1rem; }
+        .note-status-btn {
+            background: #eee; border: 1px solid #999;
+            padding: 5px 0; cursor: pointer; font-size: 0.9rem;
+            width: 90px; text-align: center; border-radius: 5px;
+            transition: 0.2s;
+        }
+        .note-memo-area {
+            width: 100%; margin-top: 15px; height: 80px;
+            border: 1px dashed #999; padding: 10px;
+            font-family: var(--font-cn); font-size: 1rem;
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* --- 修改 Task 1: 生日彈窗優化樣式 (縮小) --- */
+        #birthday-modal > div {
+            width: 85%; /* 縮小一點 */
+            max-width: 350px; /* 限制最大寬度 */
+            padding: 25px; /* 減少內邊距 */
+            background: #f2e8d5; /* 確保不透明背景 */
+            border: 3px solid var(--accent-red);
+            transform: rotate(-2deg);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            position: relative;
+            z-index: 200000; /* 確保層級最高 */
+        }
+        
+        /* --- 懲罰轉盤樣式 --- */
+        .roulette-container {
+            width: 100%;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .roulette-box {
+            border: 4px solid var(--ink);
+            background: #fff;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-red);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        .roulette-option {
+            animation: none;
+        }
+        .special-card-display {
+            background: linear-gradient(135deg, #2b1d1d, #8a0303);
+            color: #fff;
+            padding: 15px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+            margin-bottom: 20px;
+            transform: rotate(-1deg);
+        }
+/* --- 新增：懸浮按鈕組樣式 --- */
+        .fab-group {
+            position: fixed; 
+            bottom: 90px; /* 位於筆記按鈕 (bottom:20px) 的上方 */
+            right: 20px;
+            display: flex; flex-direction: column; gap: 15px;
+            z-index: 9000; 
+            pointer-events: none; /* 容器不擋點擊 */
+        }
+        .fab-btn {
+            width: 50px; height: 50px; border-radius: 50%;
+            border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer; pointer-events: auto;
+            display: none; /* 預設隱藏，登入後顯示 */
+            justify-content: center; align-items: center;
+            background-size: cover; background-position: center;
+            transition: transform 0.2s;
+        }
+        .fab-btn:active { transform: scale(0.9); }
+        
+        /* 案件大廳按鈕 (放大鏡) */
+        #fab-lobby { background-color: var(--accent-red); font-size: 1.5rem; color: #fff; }
+        
+        /* 人物圖像按鈕 (背景圖由 JS 動態載入) */
+        #fab-dossier { background-color: var(--ink); border: 2px solid var(--accent-red); }
     </style>
 </head>
 <body>
@@ -270,13 +443,45 @@
         <h2>DECRYPTING...</h2>
     </div>
 
-    <!-- 全屏干擾卡 -->
+    <!-- 全屏干擾卡 (保留給抽獎等使用) -->
     <div id="interference-fullscreen" class="interference-overlay" onclick="this.style.display='none'">
         <h1 style="font-size: 4rem; border: none; color: white;">⚠ WARNING</h1>
         <h2 id="interference-text" style="background: none; box-shadow: none; font-size: 2rem;"></h2>
         <p style="margin-top:20px; font-size:1rem; opacity:0.8;">( TAP SCREEN TO DISMISS )</p>
     </div>
 
+    <!-- Jasmine生日彈窗 (已縮小) -->
+    <div id="birthday-modal" class="static-overlay">
+         <div>
+            <div style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:5px 15px; font-family:var(--font-en); font-size:0.8rem;">TOP SECRET</div>
+            <h2 style="color: var(--accent-red); font-family: var(--font-en); border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-top: 10px;">MESSAGE DECODED</h2>
+            <p style="font-family: var(--font-cn); font-size: 1.5rem; font-weight: bold; margin: 20px 0; line-height: 1.5;">祝玩家 Jasmine<br>生日快樂 🎂</p>
+            <p style="text-align: right; font-family: var(--font-en); margin-top: 20px; font-weight: bold;">—— By Skai</p>
+            <button class="btn" onclick="closeBirthdayModal()" style="margin-top: 25px;">RECEIVED</button>
+         </div>
+    </div>
+
+    <!-- 新增：特工推理筆記懸浮按鈕與彈窗 -->
+    <button id="notebook-btn" class="notebook-trigger" onclick="toggleNotebook()">📝</button>
+
+    <div id="notebook-modal" class="static-overlay" style="display:none; z-index: 200000; background: rgba(0,0,0,0.7);">
+        <div class="notebook-paper">
+            <h3 style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0;">🕵️ 特工推理筆記 <br><small style="font-size:0.7rem; color:#666;">(僅自己可見 / Local Storage)</small></h3>
+            <div id="notebook-entries"></div>
+            <textarea id="notebook-memo" class="note-memo-area" placeholder="自由備忘錄：記錄誰說了謊..."></textarea>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn" onclick="saveNotebook()" style="background:var(--success-green); border:none; padding: 5px;">保存 (SAVE)</button>
+                <button class="btn" onclick="toggleNotebook()" style="background:#666; border:none; padding: 5px;">關閉 (CLOSE)</button>
+            </div>
+        </div>
+    </div>
+<!-- 新增：懸浮按鈕組 (人物頭像 + 放大鏡) -->
+    <div class="fab-group">
+        <!-- 人物圖像按鈕：點擊去檔案頁 -->
+        <div id="fab-dossier" class="fab-btn" onclick="showGlobalPage('dossier')"></div>
+        <!-- 案件大廳按鈕：點擊去大廳 -->
+        <div id="fab-lobby" class="fab-btn" onclick="enterLobby()">🔍</div>
+    </div>
     <div class="container">
         <!-- Page 0: Cover -->
         <div id="page-0" class="page active">
@@ -290,7 +495,7 @@
                 <p style="font-family: var(--font-en); font-size: 1.2rem; color: var(--accent-red); letter-spacing: 2px;">AVALON PROTOCOL</p>
             </div>
             <div style="flex-grow: 1;"></div>
-            <button class="btn btn-safe-bottom" style="z-index: 2;" onclick="showLocalPage('1')">開始調查 (START)</button>
+            <button class="btn btn-safe-bottom" style="z-index: 2;" onclick="startGameWithInstructions()">開始調查 (START)</button>
         </div>
 
         <!-- Page 1: Login -->
@@ -310,6 +515,11 @@
                     <div id="avatar-section" class="avatar-section">
                         <div style="font-size: 0.8rem; color: #666; margin: 10px 0; text-align: center;">ATTACH PHOTO ID:</div>
                         <div id="avatar-selection-grid" class="avatar-grid"></div>
+                        
+                        <div style="margin-top: 10px; text-align: center;">
+                            <input type="tel" id="birthday-input" class="birthday-input" placeholder="輸入生日 (4位數)" maxlength="4">
+                        </div>
+
                         <div style="display:flex; gap:10px; margin-top:10px;">
                             <button class="btn" style="background: #ccc; border:none; font-size: 0.8rem; padding: 5px; flex:1;" onclick="closeFileAvatarSection()">取消</button>
                             <button id="confirm-btn" class="btn" style="margin:0; flex:2; background: var(--accent-red); border-color: var(--accent-red);" onclick="confirmIdentity()" disabled>確認 (CONFIRM)</button>
@@ -342,6 +552,9 @@
                         <span class="dossier-label">CODE NAME:</span>
                         <div class="dossier-value" id="dossier-codename"></div>
                         
+                        <span class="dossier-label">BIRTHDAY:</span>
+                        <div class="dossier-value" id="dossier-birthday" style="font-size:0.9rem;"></div>
+
                         <span class="dossier-label">ROLE:</span>
                         <div class="dossier-value" id="dossier-role" style="color:var(--accent-red)"></div>
                         
@@ -349,6 +562,7 @@
                         <div class="dossier-value" id="dossier-objective" style="font-size:0.8rem; font-weight:normal;"></div>
                     </div>
                     <div class="dossier-photo-frame">
+                        <div id="birthday-hat-container"></div>
                         <img id="dossier-photo" src="">
                     </div>
                 </div>
@@ -385,7 +599,10 @@
             
             <h2>案件大廳</h2>
             <div class="case-file" style="display:flex; align-items:center; gap: 15px;">
-                <img id="lobby-avatar-img" src="" style="width: 70px; height: 70px; border-radius: 10px; border: 2px solid var(--ink); object-fit: cover;">
+                <div class="lobby-avatar-wrapper">
+                    <img id="lobby-avatar-img" src="" style="width: 100%; height: 100%; border-radius: 10px; border: 2px solid var(--ink); object-fit: cover;">
+                    <div id="lobby-emoji-display" class="lobby-emoji-badge"></div>
+                </div>
                 <div style="text-align:left;">
                     <span style="font-size:0.8rem; color:#888;">AGENT IDENTITY</span><br>
                     <span id="lobby-player-name" style="font-weight:bold; font-size: 1.5rem; color:var(--accent-red)"></span>
@@ -405,6 +622,12 @@
                 <span style="font-size: 1.2rem; font-weight:bold;">📁 案件二：派對行動</span>
                 <span style="font-size: 0.8rem; opacity:0.8;">指認臥底 / 執行任務</span>
                 <div class="progress-container"><div class="progress-bar" id="lobby-progress"></div></div>
+            </div>
+
+            <!-- Emoji 裝飾選擇欄 -->
+            <div style="width: 100%; margin-top: 20px; text-align: left;">
+                <p style="font-size: 0.8rem; color: #666; font-weight: bold; margin-left: 5px;">個人形象裝飾 (DECORATION)</p>
+                <div id="emoji-selector" class="emoji-scroll-wrapper"></div>
             </div>
         </div>
 
@@ -554,18 +777,62 @@
                 <hr style="border-top: 1px dashed #000;">
                 <div id="final-roles-reveal" style="text-align: left; font-size: 0.9rem;"></div>
             </div>
-            <button class="btn btn-safe-bottom" onclick="goToGiftSection()">前往怪禮物抽獎</button>
+            <!-- 修改 Task 3: 按鈕導向懲罰頁面 -->
+            <button class="btn btn-safe-bottom" onclick="enterPunishmentPhase()">前往懲罰環節 (PUNISHMENT)</button>
         </div>
 
-        <!-- Page 7: Gift -->
+        <!-- 新增 Task 3: Page 6.5 Punishment -->
+        <div id="page-punishment" class="page">
+            <h2>懲罰轉盤</h2>
+            <p id="punishment-instruction"></p>
+            
+            <div id="punishment-input-area" style="display:none; width:100%;">
+                <input type="text" id="punishment-input-one" class="birthday-input" placeholder="輸入一個懲罰..." style="text-align:left;">
+                <button class="btn" onclick="submitOnePunishment()">提交懲罰 (SUBMIT)</button>
+            </div>
+
+            <div id="punishment-wait-area" style="display:none; text-align:center; color:#666;">
+                <p>等待所有獲勝者輸入懲罰...</p>
+                <p id="punishment-status-count" style="font-weight:bold; color:var(--accent-red); margin-top:5px;"></p>
+            </div>
+
+            <div id="punishment-wheel-area" style="display:none; width:100%; text-align:center;">
+                <div class="roulette-container">
+                    <div class="roulette-box">
+                        <div id="roulette-display">?</div>
+                    </div>
+                </div>
+                <button id="spin-btn" class="btn" style="background:var(--accent-red); border-color:var(--accent-red);" onclick="spinPunishmentWheel()">開始轉盤 (SPIN)</button>
+            </div>
+
+            <div style="flex-grow:1;"></div>
+            <button class="btn btn-safe-bottom" onclick="goToGiftSection()">前往怪禮物抽獎 (GIFT)</button>
+        </div>
+
+        <!-- Page 7: Gift (修改: 顯示優先抽獎者與交換卡) -->
         <div id="page-7" class="page">
             <h2>沒人想要你的禮物（怪禮物）交換</h2>
+            
+            <!-- 新增: 輪次與MVP卡片區域 -->
+            <div id="gift-priority-display" style="width:100%; text-align:center; padding:10px; border-bottom:2px dashed #aaa; margin-bottom:15px;">
+                <!-- JS 填充 -->
+            </div>
+
             <p>請選擇您帶來的禮物號碼</p>
             <div id="my-gift-select" style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom: 20px;"></div>
             <div id="draw-section" style="width: 100%; text-align: center; display:none;">
-                <button class="btn" style="background: var(--accent-red); border-color: var(--accent-red);" onclick="luckyDraw()">開始抽獎</button>
+                <button id="btn-draw-gift" class="btn" style="background: var(--accent-red); border-color: var(--accent-red);" onclick="luckyDraw()">開始抽獎</button>
             </div>
             <div id="draw-result" style="margin-top: 20px; width: 100%;"></div>
+        </div>
+<!-- 新增 Page 8: 結局撒花頁 -->
+        <div id="page-8" class="page">
+            <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <h1 style="color: var(--accent-red); font-size: 3rem; margin-bottom: 20px;">🎉 遊戲結束 🎉</h1>
+                <h2 style="background: none; color: #333; box-shadow: none;">撒花！</h2>
+                <div style="font-size: 5rem; animation: bounce 2s infinite;">💐🚀✨</div>
+                <button class="btn" style="margin-top: 40px;" onclick="alert('探險功能開發中 / 或是請自行安排後續活動！')">前往探險 (EXPLORE)</button>
+            </div>
         </div>
     </div>
 
@@ -587,6 +854,22 @@
         const db = firebase.database();
 
         const PLAYERS_LIST = ["Skai", "Joyce", "Katie", "Jasmine", "Macy", "Ching", "Bowie", "Carman"];
+        
+        // 生日資料
+        const BIRTHDAYS = {
+            "Skai": "0426",
+            "Jasmine": "1216",
+            "Macy": "1113",
+            "Katie": "0428",
+            "Joyce": "0703",
+            "Carman": "0817",
+            "Ching": "0921",
+            "Bowie": "0905"
+        };
+
+        // Emoji 列表
+        const EMOJI_OPTIONS = ["🎅", "🤶", "🎄", "🎁", "⭐", "☃️", "❄️", "🦌", "🎀 ", "🔍", "✨", "😎", "🕵️", "👑", "😈", "🔦 ", "🎉", "🔥", "🔔", "👻"];
+
         const GIFT_RULES = ["外貌古怪", "用途古怪", "整體詭異"];
         const GIFT_DESCRIPTIONS = {
             "外貌古怪": "讓人看第一眼就想移開視線。",
@@ -647,7 +930,7 @@
         // [修復] 全局點擊音效
         document.addEventListener('click', function(e) {
             // 使用 closest 查找最近的按鈕元素
-            const btn = e.target.closest('button') || e.target.closest('.btn') || e.target.closest('.nav-btn') || e.target.closest('.avatar-option') || e.target.closest('.player-tile') || e.target.closest('.vote-btn') || e.target.closest('.number-btn');
+            const btn = e.target.closest('button') || e.target.closest('.btn') || e.target.closest('.nav-btn') || e.target.closest('.avatar-option') || e.target.closest('.player-tile') || e.target.closest('.vote-btn') || e.target.closest('.number-btn') || e.target.closest('.emoji-btn');
             
             if (btn) {
                 document.getElementById('sfx-click').currentTime = 0;
@@ -666,6 +949,16 @@
             // 當有人確認身份時，刷新檔案卡片
             if (document.getElementById('page-1').classList.contains('active')) {
                 updateFileCardDisplay();
+            }
+
+            // Task: 監聽懲罰列表更新
+            if ((data.punishmentSubmissions || !data.punishmentSubmissions) && document.getElementById('page-punishment').classList.contains('active')) {
+                renderPunishmentPage(data);
+            }
+
+             // Task: 監聽禮物順序更新
+            if (data.giftDrawOrder && document.getElementById('page-7').classList.contains('active')) {
+                initGiftPage();
             }
 
             handleStateTransition(data);
@@ -693,9 +986,28 @@
             else if (state === 4) { showGlobalPage('4'); renderGamePhase(data); }
             else if (state === 5) { showGlobalPage('5'); setupAssassinPhase(data); }
             else if (state === 6) { showGlobalPage('6'); renderFinalResult(data); }
+            else if (state === 6.5) { showGlobalPage('punishment'); renderPunishmentPage(data); }
             else if (state === 7) { showGlobalPage('7'); initGiftPage(); }
             else if (state === 0) { showGlobalPage('0'); }
+            
+// 登入後顯示筆記本按鈕與懸浮按鈕
+            if (amIRegistered) {
+                document.getElementById('notebook-btn').style.display = 'flex';
+                document.getElementById('fab-dossier').style.display = 'flex';
+                document.getElementById('fab-lobby').style.display = 'flex';
+                
+                // 更新懸浮按鈕的頭像 (從 serverData 讀取)
+                if (data.players && data.players[myName] && data.players[myName].avatar) {
+                    document.getElementById('fab-dossier').style.backgroundImage = `url('${data.players[myName].avatar}')`;
+                }
+            }
         }
+
+        // 新增：帶有注意事項的開始函數
+        window.startGameWithInstructions = () => {
+            alert("**遊戲注意事項**\n1. 點擊開始看見自己「secret agent」頁面\n2. 滑到最底點擊「前往案件大廳按鈕」\n3. 打開「案件一」查看準備裝飾和怪禮物\n4. 看群組置頂看遊戲規則");
+            window.tryStartGame();
+        };
 
         window.tryStartGame = async () => { showGlobalPage('1'); };
 
@@ -769,6 +1081,8 @@
             document.getElementById('select-name-btn').style.display = 'none'; 
             document.getElementById('avatar-section').style.display = 'block'; 
             myName = PLAYERS_LIST[currentFileIndex]; 
+            // 清空輸入框
+            document.getElementById('birthday-input').value = "";
             renderAvatarGrid(); 
         };
 
@@ -786,8 +1100,20 @@
             });
         }
 
+        // 修改：生日驗證邏輯與錯誤訊息
         window.confirmIdentity = () => {
             if (!myName || !selectedAvatar) return;
+            
+            const inputDob = document.getElementById('birthday-input').value.trim();
+            const correctDob = BIRTHDAYS[myName];
+
+            if (inputDob !== correctDob) {
+                // 修改錯誤訊息
+                alert("別偷看別人的檔案！！");
+                document.getElementById('birthday-input').value = "";
+                return;
+            }
+
             localStorage.setItem("u_name", myName);
             window.showLocalPage('fingerprint');
             db.ref(`game/players/${myName}`).update({ joined: true, avatar: selectedAvatar }).then(() => {
@@ -814,14 +1140,70 @@
         }
 
         window.unlockDossier = () => { window.showLocalPage('dossier'); revealDossierContent(); };
-        window.enterLobby = () => { window.showLocalPage('2'); updateLobbyInfo(); };
+        
+        // 修改：進入大廳時初始化 Emoji 選擇器
+        window.enterLobby = () => { 
+            window.showLocalPage('2'); 
+            updateLobbyInfo(); 
+            renderLobbyEmojiBar(); 
+        };
 
+        // 新增：渲染案件大廳的 Emoji 選擇欄
+        function renderLobbyEmojiBar() {
+            const container = document.getElementById('emoji-selector');
+            if (container.children.length > 0) return; // 避免重複渲染
+            
+            EMOJI_OPTIONS.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.className = 'emoji-btn';
+                btn.innerText = emoji;
+                btn.onclick = () => setLobbyEmoji(emoji);
+                container.appendChild(btn);
+            });
+        }
+
+        // 新增：設定 Emoji 並同步到 Firebase
+        function setLobbyEmoji(emoji) {
+            db.ref(`game/players/${myName}`).update({ statusEmoji: emoji });
+        }
+
+        // 修改：Jasmine 生日彈窗與表情
         async function revealDossierContent() {
             const snap = await db.ref(`game/players/${myName}`).get();
             let pData = snap.val();
             if (!pData || !pData.role) { setTimeout(() => revealDossierContent(), 1000); return; }
             document.getElementById('dossier-codename').innerText = myName;
+            
+            // 顯示生日
+            if (BIRTHDAYS[myName]) {
+                document.getElementById('dossier-birthday').innerText = BIRTHDAYS[myName];
+            }
+
             if(pData.avatar) document.getElementById('dossier-photo').src = pData.avatar;
+            
+            // Jasmine 彩蛋與彈窗
+            const hatContainer = document.getElementById('birthday-hat-container');
+            hatContainer.innerHTML = ''; // 清空舊的
+            
+            if (myName === 'Jasmine') {
+                // 1. 增加更多 Emoji
+                const hat = document.createElement('div');
+                hat.className = 'birthday-hat';
+                hat.innerHTML = '🥳🎂🎉'; 
+                hatContainer.appendChild(hat);
+
+                // 2. 檢查是否顯示過生日彈窗
+                const hasSeenBirthday = localStorage.getItem("jasmine_bday_seen");
+                if (!hasSeenBirthday) {
+                    // 顯示自定義彈窗 (不再有紅光背景)
+                    setTimeout(() => {
+                        document.getElementById('birthday-modal').style.display = 'flex';
+                    }, 500);
+                    // 標記已讀
+                    localStorage.setItem("jasmine_bday_seen", "true");
+                }
+            }
+
             const stamp = document.getElementById('dossier-role-stamp');
             const desc = document.getElementById('dossier-objective');
             const teamInfo = document.getElementById('dossier-teammates');
@@ -847,11 +1229,24 @@
             }
         }
 
+        // 關閉生日彈窗
+        window.closeBirthdayModal = () => {
+            document.getElementById('birthday-modal').style.display = 'none';
+        };
+
+        // 修改：更新大廳資訊時同時顯示 Emoji
         async function updateLobbyInfo() {
             document.getElementById('lobby-player-name').innerText = myName;
             const snap = await db.ref(`game/players/${myName}`).get();
             const pData = snap.val();
+            
             if (pData && pData.avatar) document.getElementById('lobby-avatar-img').src = pData.avatar;
+            
+            // 更新裝飾 Emoji
+            if (pData && pData.statusEmoji) {
+                document.getElementById('lobby-emoji-display').innerText = pData.statusEmoji;
+            }
+
             if (pData && pData.role) {
                 document.getElementById('lobby-player-role').innerText = `[ ${ROLE_MAP[pData.role]} ]`;
                 const hidden = document.getElementById('lobby-player-role').classList.contains('blur-text');
@@ -869,8 +1264,9 @@
             ruleText.innerText = pData.giftRule; ruleDesc.innerText = GIFT_DESCRIPTIONS[pData.giftRule] || ""; ruleText.classList.remove('stamp-animate'); void ruleText.offsetWidth; ruleText.classList.add('stamp-animate');
         };
 
+// 修改後：智能進入遊戲（會記憶進度）
         window.enterMainGame = () => {
-            // 修改 key 名稱以確保邏輯刷新
+            // 1. 密碼檢查 (保持不變)
             const isUnlocked = localStorage.getItem("case2_lock_secure");
             if (!isUnlocked) {
                 let password = prompt("⚠ RESTRICTED AREA ⚠\n請輸入案件密碼：");
@@ -881,10 +1277,40 @@
                 localStorage.setItem("case2_lock_secure", "true");
             }
 
-            window.showLocalPage('4');
-            if (!serverData.roundPhase) {
-                const randomLeader = Math.floor(Math.random() * PLAYERS_LIST.length);
-                db.ref('game').update({ state: 4, currentRound: 1, leaderIndex: randomLeader, roundPhase: 'intro', questResults: [] });
+            // 2. 智能判斷狀態 (Smart Resume)
+            // 檢查伺服器當前的狀態，決定跳轉去哪裡，而不是無腦跳去 Page 4
+            const currentState = serverData.state;
+
+            if (currentState === 5) {
+                // 如果是刺殺環節，跳去 Page 5
+                showGlobalPage('5'); 
+                setupAssassinPhase(serverData);
+            } else if (currentState === 6) {
+                // 如果已經結局，跳去 Page 6
+                showGlobalPage('6'); 
+                renderFinalResult(serverData);
+            } else if (currentState === 6.5) {
+                // 如果是懲罰環節
+                showGlobalPage('punishment');
+                renderPunishmentPage(serverData);
+            } else if (currentState === 7) {
+                 // 如果是禮物環節
+                showGlobalPage('7');
+                initGiftPage();
+            } else if (currentState === 8) {
+                 // 如果是最後撒花
+                showGlobalPage('8');
+            } else if (currentState === 4) {
+                 // 遊戲正在進行中，回到 Page 4 並重新渲染當前階段
+                 showGlobalPage('4');
+                 renderGamePhase(serverData);
+            } else {
+                // 3. 只有當狀態還沒開始 (<4) 時，才執行初始化開啟遊戲
+                showGlobalPage('4');
+                if (!serverData.roundPhase) {
+                    const randomLeader = Math.floor(Math.random() * PLAYERS_LIST.length);
+                    db.ref('game').update({ state: 4, currentRound: 1, leaderIndex: randomLeader, roundPhase: 'intro', questResults: [] });
+                }
             }
         };
 
@@ -1159,34 +1585,29 @@
             db.ref('game').update({ state: 6, finalWinner: (targetRole === 'God' ? 'Evil' : 'Good'), assassinTarget: myAssassinTarget });
         };
 
-        function renderFinalResult(data) {
+function renderFinalResult(data) {
             const winner = data.finalWinner;
             const title = document.getElementById('final-winner');
             const reason = document.getElementById('final-reason');
             const rolesBox = document.getElementById('final-roles-reveal');
             
-            // 懲罰與獎勵變量
-            let punishmentText = "";
-            let specialRewardHTML = "";
-
+            // 判斷 MVP (持有卡片者)
+            let mvpName = null;
             if (winner === 'Evil') {
                 title.innerText = "臥底陣營獲勝！"; title.style.color = "var(--fail-red)";
                 reason.innerText = data.assassinTarget ? `刺客成功擊殺猜忌之神 (${data.assassinTarget})！` : "臥底破壞了兩次任務。";
                 
-                punishmentText = "😈 懲罰時刻：請臥底陣營決定如何懲罰偵探陣營！";
-                
-                const successCount = (data.questResults || []).filter(r => r === true).length;
-                if (successCount >= 2 && data.assassinTarget) {
-                     specialRewardHTML = `<div class='special-reward'>🎁 刺客表現卓越：獲得「怪禮物強行交換卡」</div>`;
-                }
+                // 壞人贏：刺客是 MVP
+                const assassinEntry = Object.entries(data.players).find(([n, p]) => p.role === 'Assassin');
+                if (assassinEntry) mvpName = assassinEntry[0];
 
             } else {
                 title.innerText = "偵探陣營獲勝！"; title.style.color = "var(--success-green)";
                 reason.innerText = `刺客失敗 (目標: ${data.assassinTarget || '無'})，好人守護了派對！`;
                 
-                punishmentText = "😇 懲罰時刻：請偵探陣營決定如何懲罰臥底陣營！";
-
-                specialRewardHTML = `<div class='special-reward'>🎁 猜忌之神存活：獲得「怪禮物強行交換卡」</div>`;
+                // 好人贏：神是 MVP
+                const godEntry = Object.entries(data.players).find(([n, p]) => p.role === 'God');
+                if (godEntry) mvpName = godEntry[0];
             }
 
             let html = "<h3>身份揭曉：</h3>";
@@ -1195,32 +1616,303 @@
                 html += `<div style="color:${color}">${name}: ${ROLE_MAP[p.role]}</div>`;
             });
             
-            html += `<div class="punishment-box">
-                        <p style="font-weight:bold; margin:0;">${punishmentText}</p>
-                        ${specialRewardHTML}
-                     </div>`;
+            // --- 修改點 1：在結果頁顯示強行交換卡 (僅 MVP 可見) ---
+            if (mvpName === myName) {
+                html += `<div class="special-card-display" style="margin-top:20px;">
+                            <h3 style="margin:0; border:none; color:#fff;">🃏 怪禮物強行交換卡</h3>
+                            <small>獎勵：在禮物交換環節使用</small>
+                         </div>`;
+            } else if (mvpName) {
+                // 讓其他人知道誰拿了卡 (可選)
+                html += `<div style="margin-top:15px; font-size:0.9rem; color:#888;">
+                            MVP 獎勵 (${mvpName})：獲得怪禮物強行交換卡
+                         </div>`;
+            }
 
             rolesBox.innerHTML = html;
         }
 
-        window.goToGiftSection = () => { db.ref('game').update({ state: 7 }); window.showLocalPage(7); };
-        function initGiftPage() { const container = document.getElementById('my-gift-select'); container.innerHTML = ''; for(let i=1; i<=8; i++) { const btn = document.createElement('div'); btn.className = 'number-btn'; btn.innerText = i; btn.onclick = () => { document.querySelectorAll('.number-btn').forEach(c => c.classList.remove('selected')); btn.classList.add('selected'); myGiftNum = i; document.getElementById('draw-section').style.display = 'block'; }; container.appendChild(btn); } }
+        /* --- Task 2: 懲罰轉盤邏輯 (修改) --- */
+        window.enterPunishmentPhase = () => {
+            db.ref('game').update({ state: 6.5, punishmentSubmissions: null });
+        };
+
+        function renderPunishmentPage(data) {
+            const myRole = data.players[myName].role;
+            const winner = data.finalWinner;
+            const isWinner = (winner === 'Evil' && (myRole === 'Undercover' || myRole === 'Assassin')) || 
+                             (winner === 'Good' && (myRole === 'Detective' || myRole === 'God'));
+
+            const instruction = document.getElementById('punishment-instruction');
+            const inputArea = document.getElementById('punishment-input-area');
+            const waitArea = document.getElementById('punishment-wait-area');
+            const wheelArea = document.getElementById('punishment-wheel-area');
+            const statusCount = document.getElementById('punishment-status-count');
+
+            const submissions = data.punishmentSubmissions || {};
+            
+            // 計算贏家人數
+            const winningPlayers = Object.entries(data.players).filter(([n, p]) => {
+                if (winner === 'Evil') return p.role === 'Undercover' || p.role === 'Assassin';
+                return p.role === 'Detective' || p.role === 'God';
+            }).map(([n, p]) => n);
+
+            const submittedCount = Object.keys(submissions).length;
+            const allSubmitted = submittedCount >= winningPlayers.length;
+
+            if (!allSubmitted) {
+                // 輸入階段
+                if (isWinner) {
+                    // 如果我是贏家，檢查我是否已經提交
+                    if (submissions[myName]) {
+                         instruction.innerText = "【等待隊友】";
+                         inputArea.style.display = 'none';
+                         waitArea.style.display = 'block';
+                         statusCount.innerText = `${submittedCount} / ${winningPlayers.length} 已提交`;
+                         wheelArea.style.display = 'none';
+                    } else {
+                         instruction.innerText = "【勝利者權利】請輸入 1 個懲罰選項：";
+                         inputArea.style.display = 'block';
+                         waitArea.style.display = 'none';
+                         wheelArea.style.display = 'none';
+                    }
+                } else {
+                    // 輸家等待
+                    instruction.innerText = "【等待審判】勝利者正在決定懲罰...";
+                    inputArea.style.display = 'none';
+                    waitArea.style.display = 'block';
+                    statusCount.innerText = `${submittedCount} / ${winningPlayers.length} 已提交`;
+                    wheelArea.style.display = 'none';
+                }
+            } else {
+                // 轉盤階段
+                instruction.innerText = isWinner ? "【觀賞時刻】敗者正在接受審判" : "【接受命運】請點擊轉盤抽取懲罰";
+                inputArea.style.display = 'none';
+                waitArea.style.display = 'none';
+                wheelArea.style.display = 'block';
+                
+                // 只有輸家可以按按鈕
+                document.getElementById('spin-btn').disabled = isWinner;
+            }
+        }
+
+        window.submitOnePunishment = () => {
+            const p1 = document.getElementById('punishment-input-one').value.trim();
+            if (!p1) return alert("請輸入懲罰！");
+            
+            db.ref(`game/punishmentSubmissions/${myName}`).set(p1);
+        };
+
+        window.spinPunishmentWheel = () => {
+            const options = Object.values(serverData.punishmentSubmissions || {});
+            const display = document.getElementById('roulette-display');
+            const btn = document.getElementById('spin-btn');
+            
+            if (options.length === 0) return;
+
+            btn.disabled = true;
+            let counter = 0;
+            let speed = 50;
+            
+            const run = () => {
+                const rand = options[Math.floor(Math.random() * options.length)];
+                display.innerText = rand;
+                counter++;
+                if (counter < 30) {
+                    setTimeout(run, speed);
+                    speed += 10; 
+                } else {
+                    display.style.color = 'red';
+                    display.style.transform = 'scale(1.2)';
+                }
+            };
+            run();
+        };
+
+        // --- Task 4: 前往禮物頁面，生成順序 ---
+        window.goToGiftSection = () => { 
+            // 只有第一個觸發的人負責生成順序 (這裡簡化為每次點擊都嘗試更新，如果已存在則不覆蓋)
+            db.ref('game').transaction(game => {
+                if (game) {
+                    game.state = 7;
+                    if (!game.giftDrawOrder) {
+                        const winner = game.finalWinner;
+                        const players = Object.keys(game.players);
+                        
+                        // 分組
+                        const winList = players.filter(n => {
+                            const r = game.players[n].role;
+                            if (winner === 'Evil') return r === 'Undercover' || r === 'Assassin';
+                            return r === 'Detective' || r === 'God';
+                        });
+                        const loseList = players.filter(n => !winList.includes(n));
+                        
+                        // 洗牌
+                        const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+                        game.giftDrawOrder = shuffle(winList).concat(shuffle(loseList));
+                        game.currentDrawIndex = 0;
+                        game.takenGifts = []; // 已經被抽走的禮物
+                    }
+                }
+                return game;
+            });
+            window.showLocalPage(7); 
+        };
+
+/* --- Task 3 & 4: 禮物頁面邏輯 --- */
+        function initGiftPage() { 
+            const container = document.getElementById('my-gift-select'); 
+            container.innerHTML = ''; 
+            
+            // 生成數字按鈕
+            for(let i=1; i<=8; i++) { 
+                const btn = document.createElement('div'); 
+                btn.className = 'number-btn'; 
+                btn.innerText = i; 
+                btn.id = `gift-btn-${i}`;
+                
+                // 如果已經被選走，顯示禁用
+                if (serverData.takenGifts && serverData.takenGifts.includes(i)) {
+                    btn.classList.add('disabled');
+                    btn.innerHTML = '❌';
+                }
+
+                btn.onclick = () => { 
+                    if (btn.classList.contains('disabled')) return;
+                    document.querySelectorAll('.number-btn').forEach(c => c.classList.remove('selected')); 
+                    btn.classList.add('selected'); 
+                    myGiftNum = i; 
+                    
+                    // 檢查是否輪到我
+                    checkMyTurn();
+                }; 
+                container.appendChild(btn); 
+            } 
+            
+            // --- 顯示順序與 MVP 卡片 ---
+            const priorityDiv = document.getElementById('gift-priority-display');
+            priorityDiv.innerHTML = '';
+            
+            if (serverData && serverData.giftDrawOrder) {
+                const order = serverData.giftDrawOrder;
+                const idx = serverData.currentDrawIndex || 0;
+                
+                // 顯示當前玩家
+                if (idx < order.length) {
+                    const currentPlayer = order[idx];
+                    let turnHTML = `<p>當前抽獎順序：<br>`;
+                    
+                    // --- 修改點 2：字體由 1.5rem 縮小至 1.1rem ---
+                    turnHTML += `<span style="font-size:1rem; background:var(--ink); color:#fff; padding:3px 10px; border-radius:4px; display:inline-block; margin-top:5px; vertical-align:middle;">${currentPlayer}</span> 的回合</p>`;
+                    
+                    priorityDiv.innerHTML += turnHTML;
+                    
+                    checkMyTurn();
+                } else {
+                    priorityDiv.innerHTML += `<p>抽獎結束！</p>`;
+                    document.getElementById('draw-section').style.display = 'none';
+                }
+
+                // --- 修改點 1 確認：MVP 判定與卡片顯示 (邏輯與結果頁一致) ---
+                const isEvilWin = (serverData.finalWinner === 'Evil');
+                let mvpName = null;
+
+                if (isEvilWin) {
+                     // 壞人贏：MVP是刺客
+                     const assassinEntry = Object.entries(serverData.players).find(([n, p]) => p.role === 'Assassin');
+                     if (assassinEntry) mvpName = assassinEntry[0];
+                } else {
+                     // 好人贏：MVP是神
+                     const godEntry = Object.entries(serverData.players).find(([n, p]) => p.role === 'God');
+                     if (godEntry) mvpName = godEntry[0];
+                }
+
+                // 只有 MVP 本人看得到這張卡
+                if (mvpName === myName) {
+                    priorityDiv.innerHTML += `<div class="special-card-display">
+                        <h3 style="margin:0; border:none; color:#fff;">🃏 怪禮物強行交換卡</h3>
+                        <small>持有者專屬可見</small>
+                    </div>`;
+                }
+            }
+        }
+
+        function checkMyTurn() {
+            if (!serverData.giftDrawOrder) return;
+            const idx = serverData.currentDrawIndex || 0;
+            const currentPlayer = serverData.giftDrawOrder[idx];
+            const btnDraw = document.getElementById('btn-draw-gift');
+            const drawSection = document.getElementById('draw-section');
+
+            if (myName === currentPlayer && myGiftNum) {
+                drawSection.style.display = 'block';
+                btnDraw.disabled = false;
+                btnDraw.innerText = "開始抽獎";
+                btnDraw.style.opacity = 1;
+            } else if (myName === currentPlayer && !myGiftNum) {
+                drawSection.style.display = 'block';
+                btnDraw.disabled = true;
+                btnDraw.innerText = "請先選擇你帶的禮物";
+                btnDraw.style.opacity = 0.5;
+            } else {
+                // 不是我的回合
+                drawSection.style.display = 'block';
+                btnDraw.disabled = true;
+                btnDraw.innerText = `等待 ${currentPlayer} 抽獎...`;
+                btnDraw.style.opacity = 0.5;
+            }
+        }
         
+// Task 4: 抽獎邏輯修正 (排除已抽 + 排除自己)
         window.luckyDraw = () => { 
             if (!myGiftNum) return; 
-            const resultDiv = document.getElementById('draw-result'); resultDiv.innerHTML = '<p>抽獎中...</p>'; 
+            
+            // 確認真的輪到我
+            const idx = serverData.currentDrawIndex || 0;
+            if (serverData.giftDrawOrder[idx] !== myName) return;
+
+            const resultDiv = document.getElementById('draw-result'); 
+            resultDiv.innerHTML = '<p>抽獎中...</p>'; 
+            
             setTimeout(() => { 
-                const isInterference = Math.random() < 0.2; 
-                if (isInterference) { 
-                    const cards = ["情報洩漏<br><small>請與你的鄰座互換禮物</small>", "駭客入侵<br><small>全體重抽</small>", "匿名舉報<br><small>指定一人先拆禮物</small>"]; 
-                    const card = cards[Math.floor(Math.random() * cards.length)]; 
-                    document.getElementById('interference-text').innerHTML = card; 
-                    document.getElementById('interference-fullscreen').style.display = 'flex'; 
-                } else { 
-                    let possible = []; for(let i=1; i<=8; i++) { if (i !== myGiftNum) possible.push(i); } 
-                    const drawn = possible[Math.floor(Math.random() * possible.length)]; 
-                    resultDiv.innerHTML = `<div class="case-file"><h3>🎁 恭喜獲得</h3><h1 style="font-size: 4rem; color: var(--accent-red); border:none;">${drawn}</h1><p>號禮物</p></div>`; 
+                const taken = serverData.takenGifts || [];
+                let possible = []; 
+                for(let i=1; i<=8; i++) { 
+                    // 排除自己帶的禮物 以及 已經被抽走的
+                    if (i !== myGiftNum && !taken.includes(i)) {
+                        possible.push(i); 
+                    }
                 } 
+                
+                // 防呆：如果最後只剩自己的禮物 (數學上可能發生)，則被迫抽自己的
+                if (possible.length === 0) {
+                     for(let i=1; i<=8; i++) { 
+                        if (!taken.includes(i)) possible.push(i);
+                     }
+                }
+
+                const drawn = possible[Math.floor(Math.random() * possible.length)]; 
+                
+                // 更新數據庫：加入 taken, index + 1
+                const newTaken = [...taken, drawn];
+                db.ref('game').update({
+                    takenGifts: newTaken,
+                    currentDrawIndex: idx + 1
+                });
+
+                // --- 修改重點：這裡加入了跳轉頁面 8 的按鈕 ---
+                resultDiv.innerHTML = `
+                    <div class="case-file">
+                        <h3>🎁 恭喜獲得</h3>
+                        <h1 style="font-size: 4rem; color: var(--accent-red); border:none;">${drawn}</h1>
+                        <p>號禮物</p>
+                    </div>
+                    <button class="btn" style="margin-top:20px; background: var(--success-green); border-color: var(--success-green);" onclick="showGlobalPage('8')">
+                        本遊戲結束撒花，前往探險 🌸
+                    </button>
+                `;
+                // ------------------------------------------
+
             }, 1000); 
         };
 
@@ -1235,6 +1927,80 @@
                 if (pass !== null) alert("密碼錯誤");
             }
         };
+
+        // --- 新增：特工推理筆記功能 (JavaScript) ---
+        const NOTEBOOK_KEY = 'agent_notebook_data';
+        const STATUS_OPTIONS = [
+            { text: "❓ 未知", color: "#666" },
+            { text: "🟢 好人", color: "var(--success-green)", style: "color:white;" },
+            { text: "🔴 壞人", color: "var(--fail-red)", style: "color:white;" },
+            { text: "☠️ 刺客", color: "#000", style: "color:white; border: 1px solid red;" },
+            { text: "👑 神", color: "purple", style: "color:white;" }
+        ];
+
+        function toggleNotebook() {
+            const modal = document.getElementById('notebook-modal');
+            const isHidden = (modal.style.display === 'none');
+            
+            if (isHidden) {
+                renderNotebookEntries();
+                // 載入備忘錄
+                const data = JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || '{}');
+                document.getElementById('notebook-memo').value = data.memo || '';
+                modal.style.display = 'flex';
+            } else {
+                modal.style.display = 'none';
+            }
+        }
+
+        function renderNotebookEntries() {
+            const container = document.getElementById('notebook-entries');
+            container.innerHTML = '';
+            
+            const data = JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || '{}');
+            const statuses = data.statuses || {};
+
+            PLAYERS_LIST.forEach(player => {
+                if (player === myName) return; // 不顯示自己
+
+                const row = document.createElement('div');
+                row.className = 'note-row';
+                
+                const currentStatusIdx = statuses[player] || 0;
+                const status = STATUS_OPTIONS[currentStatusIdx];
+
+                row.innerHTML = `
+                    <div class="note-name">${player}</div>
+                    <div class="note-status-btn" style="background:${status.color}; ${status.style || ''}" 
+                         onclick="cycleNoteStatus('${player}')">${status.text}</div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function cycleNoteStatus(player) {
+            const data = JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || '{}');
+            if (!data.statuses) data.statuses = {};
+            
+            let current = data.statuses[player] || 0;
+            current = (current + 1) % STATUS_OPTIONS.length;
+            data.statuses[player] = current;
+            
+            localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(data));
+            renderNotebookEntries();
+        }
+
+        function saveNotebook() {
+            const data = JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || '{}');
+            data.memo = document.getElementById('notebook-memo').value;
+            localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(data));
+            alert("筆記已保存 (Saved Locally)");
+            toggleNotebook();
+        }
     </script>
 </body>
 </html>
+
+
+
+
