@@ -806,7 +806,7 @@
             </div>
 
             <div style="flex-grow:1;"></div>
-            <button class="btn btn-safe-bottom" onclick="goToGiftSection()">前往怪禮物抽獎 (GIFT)</button>
+            <button id="btn-go-gift" class="btn btn-safe-bottom" onclick="goToGiftSection()" disabled style="opacity: 0.5;">等待懲罰提交... (LOCKED)</button>
         </div>
 
         <!-- Page 7: Gift (修改: 顯示優先抽獎者與交換卡) -->
@@ -1637,7 +1637,7 @@ function renderFinalResult(data) {
             db.ref('game').update({ state: 6.5, punishmentSubmissions: null });
         };
 
-        function renderPunishmentPage(data) {
+function renderPunishmentPage(data) {
             const myRole = data.players[myName].role;
             const winner = data.finalWinner;
             const isWinner = (winner === 'Evil' && (myRole === 'Undercover' || myRole === 'Assassin')) || 
@@ -1648,6 +1648,9 @@ function renderFinalResult(data) {
             const waitArea = document.getElementById('punishment-wait-area');
             const wheelArea = document.getElementById('punishment-wheel-area');
             const statusCount = document.getElementById('punishment-status-count');
+            
+            // --- 新增：獲取前往禮物的按鈕 ---
+            const btnGoGift = document.getElementById('btn-go-gift');
 
             const submissions = data.punishmentSubmissions || {};
             
@@ -1658,10 +1661,21 @@ function renderFinalResult(data) {
             }).map(([n, p]) => n);
 
             const submittedCount = Object.keys(submissions).length;
+            // 檢查是否所有贏家都提交了
             const allSubmitted = submittedCount >= winningPlayers.length;
 
             if (!allSubmitted) {
-                // 輸入階段
+                // --- 階段 1: 輸入懲罰中 ---
+                
+                // 鎖定按鈕
+                if(btnGoGift) {
+                    btnGoGift.disabled = true;
+                    btnGoGift.innerText = `等待懲罰提交... (${submittedCount}/${winningPlayers.length})`;
+                    btnGoGift.style.opacity = 0.5;
+                    btnGoGift.style.background = "#999";
+                    btnGoGift.style.borderColor = "#999";
+                }
+
                 if (isWinner) {
                     // 如果我是贏家，檢查我是否已經提交
                     if (submissions[myName]) {
@@ -1685,13 +1699,23 @@ function renderFinalResult(data) {
                     wheelArea.style.display = 'none';
                 }
             } else {
-                // 轉盤階段
+                // --- 階段 2: 轉盤開啟 ---
+                
+                // 解鎖按鈕
+                if(btnGoGift) {
+                    btnGoGift.disabled = false;
+                    btnGoGift.innerText = "前往怪禮物抽獎 (GIFT)";
+                    btnGoGift.style.opacity = 1;
+                    btnGoGift.style.background = "var(--ink)"; // 恢復原本顏色
+                    btnGoGift.style.borderColor = "var(--ink)";
+                }
+
                 instruction.innerText = isWinner ? "【觀賞時刻】敗者正在接受審判" : "【接受命運】請點擊轉盤抽取懲罰";
                 inputArea.style.display = 'none';
                 waitArea.style.display = 'none';
                 wheelArea.style.display = 'block';
                 
-                // 只有輸家可以按按鈕
+                // 只有輸家可以按轉盤按鈕
                 document.getElementById('spin-btn').disabled = isWinner;
             }
         }
@@ -1837,23 +1861,19 @@ function renderFinalResult(data) {
             }
         }
 
-        function checkMyTurn() {
+function checkMyTurn() {
             if (!serverData.giftDrawOrder) return;
             const idx = serverData.currentDrawIndex || 0;
             const currentPlayer = serverData.giftDrawOrder[idx];
             const btnDraw = document.getElementById('btn-draw-gift');
             const drawSection = document.getElementById('draw-section');
 
-            if (myName === currentPlayer && myGiftNum) {
+            // --- 修改點：只要名字對了，就直接開放抽獎 (移除 myGiftNum 的判斷) ---
+            if (myName === currentPlayer) {
                 drawSection.style.display = 'block';
                 btnDraw.disabled = false;
                 btnDraw.innerText = "開始抽獎";
                 btnDraw.style.opacity = 1;
-            } else if (myName === currentPlayer && !myGiftNum) {
-                drawSection.style.display = 'block';
-                btnDraw.disabled = true;
-                btnDraw.innerText = "請先選擇你帶的禮物";
-                btnDraw.style.opacity = 0.5;
             } else {
                 // 不是我的回合
                 drawSection.style.display = 'block';
@@ -1863,9 +1883,9 @@ function renderFinalResult(data) {
             }
         }
         
-// Task 4: 抽獎邏輯修正 (含干擾卡 + 駭客自動重置系統 + 結局按鈕)
+// Task 4: 抽獎邏輯最終版 (無須選號 + 干擾卡 + 駭客重置 + 結局跳轉)
         window.luckyDraw = () => { 
-            if (!myGiftNum) return; 
+            // --- 修改點：移除了 if (!myGiftNum) return; 這行，沒選號碼也能跑 ---
             
             // 1. 確認是否輪到我
             const idx = serverData.currentDrawIndex || 0;
@@ -1878,10 +1898,8 @@ function renderFinalResult(data) {
                     "⚠ 駭客入侵 ⚠\n(SYSTEM FAILURE)\n\n系統崩潰！本輪無效！\n所有人歸還禮物\n順序重洗，全部重來！",
                     "⚠ 匿名舉報 ⚠\n(WHISTLEBLOWER)\n\n指定現場任意一人\n立刻拆開他的禮物！"
                 ];
-                // 隨機選一個干擾事件
                 const eventText = events[Math.floor(Math.random() * events.length)];
                 
-                // 顯示全屏紅黑警告
                 const overlay = document.getElementById('interference-fullscreen');
                 const overlayText = document.getElementById('interference-text');
                 
@@ -1890,33 +1908,29 @@ function renderFinalResult(data) {
                 overlayText.style.lineHeight = "2";
                 overlay.style.display = 'flex';
                 
-                // 播放音效
                 document.getElementById('sfx-alert').play().catch(e=>{});
 
-                // --- 【駭客卡專屬邏輯 (自動重置)】 ---
+                // --- 駭客卡自動重置 ---
                 if (eventText.includes("駭客入侵")) {
                     setTimeout(() => {
-                        // 1. 重新洗牌玩家順序
                         let newOrder = [...serverData.giftDrawOrder];
                         newOrder.sort(() => Math.random() - 0.5);
 
-                        // 2. 清空已抽禮物、歸零進度、更新順序
                         db.ref('game').update({
-                            takenGifts: null,      // 清空已抽紀錄
-                            currentDrawIndex: 0,   // 回到第一個人
-                            giftDrawOrder: newOrder // 新的順序
+                            takenGifts: null,
+                            currentDrawIndex: 0,
+                            giftDrawOrder: newOrder
                         });
                         
                         alert("💀 系統已重置！所有禮物請歸還原主，準備重新開始！");
                     }, 1000); 
                 }
-                // ------------------------------------------
                 
-                return; // 結束函式，不執行抽獎
+                return; // 有干擾就不繼續抽
             }
             // ------------------------------------------
 
-            // 2. 正常抽獎流程 (沒遇到干擾)
+            // 2. 正常抽獎流程
             const resultDiv = document.getElementById('draw-result'); 
             resultDiv.innerHTML = '<p>訊號接收中...</p>'; 
             
@@ -1924,13 +1938,18 @@ function renderFinalResult(data) {
                 const taken = serverData.takenGifts || [];
                 let possible = []; 
                 for(let i=1; i<=8; i++) { 
-                    // 排除自己帶的禮物 以及 已經被抽走的
-                    if (i !== myGiftNum && !taken.includes(i)) {
+                    // 排除已經被抽走的
+                    if (!taken.includes(i)) {
+                        // 這裡做個判斷：如果玩家有「自願」點擊自己的號碼 (myGiftNum 有值)，就幫他排除
+                        // 如果玩家沒點 (myGiftNum 是 null)，就不排除
+                        if (myGiftNum && i === myGiftNum) {
+                            continue; 
+                        }
                         possible.push(i); 
                     }
                 } 
                 
-                // 防呆：如果最後只剩自己的禮物
+                // 防呆：如果真的沒禮物可抽 (例如只剩自己的，或者全部都抽完了)
                 if (possible.length === 0) {
                      for(let i=1; i<=8; i++) { 
                         if (!taken.includes(i)) possible.push(i);
@@ -1939,14 +1958,12 @@ function renderFinalResult(data) {
 
                 const drawn = possible[Math.floor(Math.random() * possible.length)]; 
                 
-                // 更新數據庫
                 const newTaken = [...taken, drawn];
                 db.ref('game').update({
                     takenGifts: newTaken,
                     currentDrawIndex: idx + 1
                 });
 
-                // 顯示結果 + 結局按鈕
                 resultDiv.innerHTML = `
                     <div class="case-file">
                         <h3>🎁 恭喜獲得</h3>
