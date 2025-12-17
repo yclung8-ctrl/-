@@ -1648,12 +1648,15 @@ function renderPunishmentPage(data) {
             const waitArea = document.getElementById('punishment-wait-area');
             const wheelArea = document.getElementById('punishment-wheel-area');
             const statusCount = document.getElementById('punishment-status-count');
+            const display = document.getElementById('roulette-display'); // 獲取顯示框
             
-            // --- 新增：獲取前往禮物的按鈕 ---
+            // 按鈕們
             const btnGoGift = document.getElementById('btn-go-gift');
+            const btnSpin = document.getElementById('spin-btn');
 
             const submissions = data.punishmentSubmissions || {};
-            
+            const result = data.punishmentResult; // 獲取懲罰結果 (關鍵!)
+
             // 計算贏家人數
             const winningPlayers = Object.entries(data.players).filter(([n, p]) => {
                 if (winner === 'Evil') return p.role === 'Undercover' || p.role === 'Assassin';
@@ -1661,23 +1664,28 @@ function renderPunishmentPage(data) {
             }).map(([n, p]) => n);
 
             const submittedCount = Object.keys(submissions).length;
-            // 檢查是否所有贏家都提交了
             const allSubmitted = submittedCount >= winningPlayers.length;
 
+            // --- 🔒 安全鎖 1：預設先把轉盤按鈕鎖死 ---
+            if (btnSpin) {
+                btnSpin.disabled = true; 
+                btnSpin.style.opacity = 0.5;
+                btnSpin.style.cursor = "not-allowed";
+            }
+
+            // --- 🔒 安全鎖 2：預設先把前往禮物按鈕鎖死 ---
+            if (btnGoGift) {
+                btnGoGift.disabled = true;
+                btnGoGift.style.opacity = 0.5;
+                btnGoGift.style.background = "#999";
+                btnGoGift.style.borderColor = "#999";
+            }
+
             if (!allSubmitted) {
-                // --- 階段 1: 輸入懲罰中 ---
-                
-                // 鎖定按鈕
-                if(btnGoGift) {
-                    btnGoGift.disabled = true;
-                    btnGoGift.innerText = `等待懲罰提交... (${submittedCount}/${winningPlayers.length})`;
-                    btnGoGift.style.opacity = 0.5;
-                    btnGoGift.style.background = "#999";
-                    btnGoGift.style.borderColor = "#999";
-                }
+                // --- 階段 1: 等待輸入 ---
+                if(btnGoGift) btnGoGift.innerText = `等待懲罰提交... (${submittedCount}/${winningPlayers.length})`;
 
                 if (isWinner) {
-                    // 如果我是贏家，檢查我是否已經提交
                     if (submissions[myName]) {
                          instruction.innerText = "【等待隊友】";
                          inputArea.style.display = 'none';
@@ -1691,7 +1699,6 @@ function renderPunishmentPage(data) {
                          wheelArea.style.display = 'none';
                     }
                 } else {
-                    // 輸家等待
                     instruction.innerText = "【等待審判】勝利者正在決定懲罰...";
                     inputArea.style.display = 'none';
                     waitArea.style.display = 'block';
@@ -1700,23 +1707,56 @@ function renderPunishmentPage(data) {
                 }
             } else {
                 // --- 階段 2: 轉盤開啟 ---
-                
-                // 解鎖按鈕
-                if(btnGoGift) {
-                    btnGoGift.disabled = false;
-                    btnGoGift.innerText = "前往怪禮物抽獎 (GIFT)";
-                    btnGoGift.style.opacity = 1;
-                    btnGoGift.style.background = "var(--ink)"; // 恢復原本顏色
-                    btnGoGift.style.borderColor = "var(--ink)";
-                }
-
-                instruction.innerText = isWinner ? "【觀賞時刻】敗者正在接受審判" : "【接受命運】請點擊轉盤抽取懲罰";
                 inputArea.style.display = 'none';
                 waitArea.style.display = 'none';
                 wheelArea.style.display = 'block';
-                
-                // 只有輸家可以按轉盤按鈕
-                document.getElementById('spin-btn').disabled = isWinner;
+
+                // 檢查是否已經有結果了 (這是新加的邏輯)
+                if (result) {
+                    // --- 階段 3: 結果已出，解鎖按鈕！---
+                    instruction.innerText = "【審判結束】懲罰已定！";
+                    display.innerText = result; // 顯示結果
+                    display.style.color = "red";
+                    display.style.transform = "scale(1.2)";
+                    
+                    // 這裡才真正的解鎖前往禮物按鈕！！！
+                    if(btnGoGift) {
+                        btnGoGift.disabled = false;
+                        btnGoGift.innerText = "前往怪禮物抽獎 (GIFT)";
+                        btnGoGift.style.opacity = 1;
+                        btnGoGift.style.background = "var(--ink)";
+                        btnGoGift.style.borderColor = "var(--ink)";
+                    }
+                    
+                    // 結果出來了，轉盤按鈕就不用再按了
+                    if(btnSpin) {
+                        btnSpin.disabled = true;
+                        btnSpin.innerText = "結果已出";
+                    }
+
+                } else {
+                    // --- 階段 2.5: 等待轉盤 ---
+                    instruction.innerText = isWinner ? "【觀賞時刻】敗者正在接受審判" : "【接受命運】請點擊轉盤抽取懲罰";
+                    
+                    // 按鈕繼續鎖著
+                    if(btnGoGift) btnGoGift.innerText = "等待懲罰抽取... (LOCKED)";
+
+                    // 控制轉盤按鈕權限
+                    if (btnSpin) {
+                        if (isWinner) {
+                            // 贏家不能按
+                            btnSpin.disabled = true;
+                            btnSpin.style.opacity = 0.5;
+                            btnSpin.innerText = "觀賞中...";
+                        } else {
+                            // 輸家可以按！
+                            btnSpin.disabled = false;
+                            btnSpin.style.opacity = 1;
+                            btnSpin.style.cursor = "pointer";
+                            btnSpin.innerText = "開始轉盤 (SPIN)";
+                        }
+                    }
+                }
             }
         }
 
@@ -1734,7 +1774,9 @@ function renderPunishmentPage(data) {
             
             if (options.length === 0) return;
 
+            // 防止重複點擊
             btn.disabled = true;
+
             let counter = 0;
             let speed = 50;
             
@@ -1742,12 +1784,20 @@ function renderPunishmentPage(data) {
                 const rand = options[Math.floor(Math.random() * options.length)];
                 display.innerText = rand;
                 counter++;
-                if (counter < 30) {
+                if (counter < 35) { // 轉久一點點
                     setTimeout(run, speed);
                     speed += 10; 
                 } else {
                     display.style.color = 'red';
                     display.style.transform = 'scale(1.2)';
+                    
+                    // --- 關鍵：轉完後，將結果寫入資料庫，觸發全場解鎖 ---
+                    setTimeout(() => {
+                        db.ref('game').update({
+                            punishmentResult: rand
+                        });
+                    }, 500);
+                    // --------------------------------------------------
                 }
             };
             run();
