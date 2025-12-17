@@ -806,7 +806,7 @@
             </div>
 
             <div style="flex-grow:1;"></div>
-            <button id="btn-go-gift" class="btn btn-safe-bottom" onclick="goToGiftSection()" disabled style="opacity: 0.5;">等待懲罰提交... (LOCKED)</button>
+           <button id="btn-go-gift" class="btn btn-safe-bottom" onclick="attemptFinishPunishment()" disabled style="opacity: 0.5;">等待懲罰提交... (LOCKED)</button>
         </div>
 
         <!-- Page 7: Gift (修改: 顯示優先抽獎者與交換卡) -->
@@ -1647,15 +1647,14 @@ function renderPunishmentPage(data) {
             const inputArea = document.getElementById('punishment-input-area');
             const waitArea = document.getElementById('punishment-wait-area');
             const wheelArea = document.getElementById('punishment-wheel-area');
-            const statusCount = document.getElementById('punishment-status-count');
-            const display = document.getElementById('roulette-display'); // 獲取顯示框
+            const display = document.getElementById('roulette-display');
             
             // 按鈕們
             const btnGoGift = document.getElementById('btn-go-gift');
             const btnSpin = document.getElementById('spin-btn');
 
             const submissions = data.punishmentSubmissions || {};
-            const result = data.punishmentResult; // 獲取懲罰結果 (關鍵!)
+            const result = data.punishmentResult; 
 
             // 計算贏家人數
             const winningPlayers = Object.entries(data.players).filter(([n, p]) => {
@@ -1666,14 +1665,12 @@ function renderPunishmentPage(data) {
             const submittedCount = Object.keys(submissions).length;
             const allSubmitted = submittedCount >= winningPlayers.length;
 
-            // --- 🔒 安全鎖 1：預設先把轉盤按鈕鎖死 ---
+            // --- 🔒 預設全部鎖死 ---
             if (btnSpin) {
                 btnSpin.disabled = true; 
                 btnSpin.style.opacity = 0.5;
                 btnSpin.style.cursor = "not-allowed";
             }
-
-            // --- 🔒 安全鎖 2：預設先把前往禮物按鈕鎖死 ---
             if (btnGoGift) {
                 btnGoGift.disabled = true;
                 btnGoGift.style.opacity = 0.5;
@@ -1690,7 +1687,6 @@ function renderPunishmentPage(data) {
                          instruction.innerText = "【等待隊友】";
                          inputArea.style.display = 'none';
                          waitArea.style.display = 'block';
-                         statusCount.innerText = `${submittedCount} / ${winningPlayers.length} 已提交`;
                          wheelArea.style.display = 'none';
                     } else {
                          instruction.innerText = "【勝利者權利】請輸入 1 個懲罰選項：";
@@ -1702,7 +1698,6 @@ function renderPunishmentPage(data) {
                     instruction.innerText = "【等待審判】勝利者正在決定懲罰...";
                     inputArea.style.display = 'none';
                     waitArea.style.display = 'block';
-                    statusCount.innerText = `${submittedCount} / ${winningPlayers.length} 已提交`;
                     wheelArea.style.display = 'none';
                 }
             } else {
@@ -1711,45 +1706,44 @@ function renderPunishmentPage(data) {
                 waitArea.style.display = 'none';
                 wheelArea.style.display = 'block';
 
-                // 檢查是否已經有結果了 (這是新加的邏輯)
                 if (result) {
-                    // --- 階段 3: 結果已出，解鎖按鈕！---
+                    // --- 階段 3: 結果已出 ---
                     instruction.innerText = "【審判結束】懲罰已定！";
-                    display.innerText = result; // 顯示結果
+                    display.innerText = result; 
                     display.style.color = "red";
                     display.style.transform = "scale(1.2)";
                     
-                    // 這裡才真正的解鎖前往禮物按鈕！！！
-                    if(btnGoGift) {
-                        btnGoGift.disabled = false;
-                        btnGoGift.innerText = "前往怪禮物抽獎 (GIFT)";
-                        btnGoGift.style.opacity = 1;
-                        btnGoGift.style.background = "var(--ink)";
-                        btnGoGift.style.borderColor = "var(--ink)";
-                    }
-                    
-                    // 結果出來了，轉盤按鈕就不用再按了
                     if(btnSpin) {
                         btnSpin.disabled = true;
                         btnSpin.innerText = "結果已出";
                     }
 
+                    // 【修改邏輯】：只有贏家可以解鎖，且需要輸入密碼！
+                    if(btnGoGift) {
+                        if (isWinner) {
+                            // 贏家：解鎖
+                            btnGoGift.disabled = false;
+                            btnGoGift.innerText = "✅ 確認懲罰結束 (VERIFY)";
+                            btnGoGift.style.opacity = 1;
+                            btnGoGift.style.background = "var(--ink)";
+                            btnGoGift.style.borderColor = "var(--ink)";
+                        } else {
+                            // 輸家：繼續鎖住
+                            btnGoGift.disabled = true;
+                            btnGoGift.innerText = "等待贏家滿意... (LOCKED)";
+                            btnGoGift.style.opacity = 0.5;
+                        }
+                    }
+
                 } else {
                     // --- 階段 2.5: 等待轉盤 ---
                     instruction.innerText = isWinner ? "【觀賞時刻】敗者正在接受審判" : "【接受命運】請點擊轉盤抽取懲罰";
-                    
-                    // 按鈕繼續鎖著
                     if(btnGoGift) btnGoGift.innerText = "等待懲罰抽取... (LOCKED)";
 
-                    // 控制轉盤按鈕權限
                     if (btnSpin) {
                         if (isWinner) {
-                            // 贏家不能按
-                            btnSpin.disabled = true;
-                            btnSpin.style.opacity = 0.5;
                             btnSpin.innerText = "觀賞中...";
                         } else {
-                            // 輸家可以按！
                             btnSpin.disabled = false;
                             btnSpin.style.opacity = 1;
                             btnSpin.style.cursor = "pointer";
