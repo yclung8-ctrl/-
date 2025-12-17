@@ -863,7 +863,7 @@
             "Katie": "0428",
             "Joyce": "0703",
             "Carman": "0817",
-            "Ching": "0921",
+            "Ching": "0920",
             "Bowie": "0905"
         };
 
@@ -1863,16 +1863,62 @@ function renderFinalResult(data) {
             }
         }
         
-// Task 4: 抽獎邏輯修正 (排除已抽 + 排除自己)
+// Task 4: 抽獎邏輯修正 (含干擾卡 + 駭客自動重置系統 + 結局按鈕)
         window.luckyDraw = () => { 
             if (!myGiftNum) return; 
             
-            // 確認真的輪到我
+            // 1. 確認是否輪到我
             const idx = serverData.currentDrawIndex || 0;
             if (serverData.giftDrawOrder[idx] !== myName) return;
 
+            // --- 【干擾卡判定系統 (機率 0.2)】 ---
+            if (Math.random() < 0.2) {
+                const events = [
+                    "⚠ 情報洩漏 ⚠\n(INTERCEPTED)\n\n請與「左手邊」的人\n互換帶來的禮物！",
+                    "⚠ 駭客入侵 ⚠\n(SYSTEM FAILURE)\n\n系統崩潰！本輪無效！\n所有人歸還禮物\n順序重洗，全部重來！",
+                    "⚠ 匿名舉報 ⚠\n(WHISTLEBLOWER)\n\n指定現場任意一人\n立刻拆開他的禮物！"
+                ];
+                // 隨機選一個干擾事件
+                const eventText = events[Math.floor(Math.random() * events.length)];
+                
+                // 顯示全屏紅黑警告
+                const overlay = document.getElementById('interference-fullscreen');
+                const overlayText = document.getElementById('interference-text');
+                
+                overlayText.innerText = eventText;
+                overlayText.style.fontSize = "1.5rem";
+                overlayText.style.lineHeight = "2";
+                overlay.style.display = 'flex';
+                
+                // 播放音效
+                document.getElementById('sfx-alert').play().catch(e=>{});
+
+                // --- 【駭客卡專屬邏輯 (自動重置)】 ---
+                if (eventText.includes("駭客入侵")) {
+                    setTimeout(() => {
+                        // 1. 重新洗牌玩家順序
+                        let newOrder = [...serverData.giftDrawOrder];
+                        newOrder.sort(() => Math.random() - 0.5);
+
+                        // 2. 清空已抽禮物、歸零進度、更新順序
+                        db.ref('game').update({
+                            takenGifts: null,      // 清空已抽紀錄
+                            currentDrawIndex: 0,   // 回到第一個人
+                            giftDrawOrder: newOrder // 新的順序
+                        });
+                        
+                        alert("💀 系統已重置！所有禮物請歸還原主，準備重新開始！");
+                    }, 1000); 
+                }
+                // ------------------------------------------
+                
+                return; // 結束函式，不執行抽獎
+            }
+            // ------------------------------------------
+
+            // 2. 正常抽獎流程 (沒遇到干擾)
             const resultDiv = document.getElementById('draw-result'); 
-            resultDiv.innerHTML = '<p>抽獎中...</p>'; 
+            resultDiv.innerHTML = '<p>訊號接收中...</p>'; 
             
             setTimeout(() => { 
                 const taken = serverData.takenGifts || [];
@@ -1884,7 +1930,7 @@ function renderFinalResult(data) {
                     }
                 } 
                 
-                // 防呆：如果最後只剩自己的禮物 (數學上可能發生)，則被迫抽自己的
+                // 防呆：如果最後只剩自己的禮物
                 if (possible.length === 0) {
                      for(let i=1; i<=8; i++) { 
                         if (!taken.includes(i)) possible.push(i);
@@ -1893,14 +1939,14 @@ function renderFinalResult(data) {
 
                 const drawn = possible[Math.floor(Math.random() * possible.length)]; 
                 
-                // 更新數據庫：加入 taken, index + 1
+                // 更新數據庫
                 const newTaken = [...taken, drawn];
                 db.ref('game').update({
                     takenGifts: newTaken,
                     currentDrawIndex: idx + 1
                 });
 
-                // --- 修改重點：這裡加入了跳轉頁面 8 的按鈕 ---
+                // 顯示結果 + 結局按鈕
                 resultDiv.innerHTML = `
                     <div class="case-file">
                         <h3>🎁 恭喜獲得</h3>
@@ -1911,8 +1957,6 @@ function renderFinalResult(data) {
                         本遊戲結束撒花，前往探險 🌸
                     </button>
                 `;
-                // ------------------------------------------
-
             }, 1000); 
         };
 
